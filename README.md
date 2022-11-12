@@ -31,7 +31,7 @@ retrotype_cli [-l load_address] [-s source_format] input_file
 
 ```
 positional arguments:
-  input_file            Specify the input file name including path
+  input_file            Specify the input file name, including path.
                         Note:  Output files will use input file basename
 
 optional arguments:
@@ -56,7 +56,7 @@ optional arguments:
 As an example for an Ahoy! magazine file:
 
 ```
-Input:   basename.bas
+Input:  basename.bas
 
 Outputs:  basename.prg (tokenized file that can be run on a Commodore computer
                         or on an emulator like VICE)
@@ -106,7 +106,7 @@ running it with the VICE emulator with the following command (must have VICE
 installed):
 
 ```
-x64sc -basicload program.prg &
+x64sc -basicload program_name.prg &
 ```
 
 Of course, you can also run the .prg file on original hardware.
