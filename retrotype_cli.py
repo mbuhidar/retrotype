@@ -156,7 +156,7 @@ def command_line_runner(argv=None, width=None):
             ahoy_checksums.append((line_num,
                                    retrotype.ahoy1_checksum(byte_list)))
         elif args.source[0] == 'ahoy2':
-            ahoy_checksums.append((line_num, 
+            ahoy_checksums.append((line_num,
                                    retrotype.ahoy2_checksum(byte_list)))
         elif args.source[0] == 'ahoy3':
             ahoy_checksums.append((line_num,
