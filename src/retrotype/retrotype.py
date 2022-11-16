@@ -6,7 +6,6 @@ emulator or on original hardware.
 
 from os import remove
 import re
-import sys
 
 # import char_maps.py: Module containing Commodore to magazine conversion maps
 try:
@@ -71,7 +70,7 @@ def confirm_overwrite(filename):
     return overwrite.lower() == 'y'
 
 
-def check_line_number_seq(lines_list):
+def check_line_num_seq(lines_list):
     """Check each line in the program that either does not start with a line
        number or starts with an out of sequence line number.
 

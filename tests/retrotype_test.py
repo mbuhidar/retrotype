@@ -2,7 +2,7 @@ from io import StringIO
 import pytest
 
 from retrotype.retrotype import (read_file,
-                                 check_line_number_seq,
+                                 check_line_num_seq,
                                  ahoy_lines_list,
                                  split_line_num,
                                  _scan,
@@ -52,7 +52,7 @@ def test_check_line_num_seq_ok(lines_list, seq_return):
     Unit test to check that function check_line_num_seq() is propery
     identifying cases where lines have the correct line number sequencing.
     """
-    assert check_line_number_seq(lines_list) == seq_return
+    assert check_line_num_seq(lines_list) == seq_return
 
 
 @pytest.mark.parametrize(
@@ -98,7 +98,7 @@ def test_check_line_num_seq_bad(lines_list, seq_return):
     identifying cases where lines either don't start with an integer line
     number or have line numbers out of sequence.
     """
-    assert check_line_number_seq(lines_list) == seq_return
+    assert check_line_num_seq(lines_list) == seq_return
 
 
 @pytest.mark.parametrize(

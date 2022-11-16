@@ -1,5 +1,5 @@
 from retrotype.retrotype import (read_file,
-                                 check_line_number_seq,
+                                 check_line_num_seq,
                                  ahoy_lines_list,
                                  split_line_num,
                                  scan_manager,
