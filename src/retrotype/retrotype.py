@@ -79,7 +79,7 @@ def check_line_number_seq(lines_list):
         lines_list (list): List of lines (str) in program.
 
     Returns:
-        None: implicit return
+        string: sequence error message text
     """
 
     line_no = 0  # handles case where first line does not have a line number
@@ -90,16 +90,11 @@ def check_line_number_seq(lines_list):
             ln_num_buffer.append(line_no)
 
             if not ln_num_buffer[0] < ln_num_buffer[1]:
-                print("Entry error after line "
-                      f"{ln_num_buffer[0]} - lines should be in sequential "
-                      "order.  Exiting.")
-                sys.exit(1)
+                return f"Entry error after line {ln_num_buffer[0]} - lines should be in sequential order.  Exiting."
             ln_num_buffer.pop(0)
 
         except ValueError:
-            print(f"Entry error after line {line_no} - each line should start "
-                  "with a line number.  Exiting.")
-            sys.exit(1)
+            return f"Entry error after line {line_no} - each line should start with a line number.  Exiting."
 
 
 def ahoy_lines_list(lines_list):

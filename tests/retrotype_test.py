@@ -34,76 +34,71 @@ def test_read_file(infile_data):
 
 
 @pytest.mark.parametrize(
-    "lines_list, term_capture",
+    "lines_list, seq_return",
     [
         (["10 OK", "20 OK", "30 OK", "40 OK"],
-         ""
+         None
          ),
         (["10 OK", "20 OK"],
-         ""
+         None
          ),
         (["10 OK"],
-         ""
+         None
          ),
     ],
 )
-def test_check_line_number_seq_ok(capsys, lines_list, term_capture):
+def test_check_line_num_seq_ok(lines_list, seq_return):
     """
-    Unit test to check that function check_line_number_seq() is propery
+    Unit test to check that function check_line_num_seq() is propery
     identifying cases where lines have the correct line number sequencing.
     """
-    check_line_number_seq(lines_list)
-    capture = capsys.readouterr()
-    assert capture.out == term_capture
+    assert check_line_number_seq(lines_list) == seq_return
 
 
 @pytest.mark.parametrize(
-    "lines_list, term_capture",
+    "lines_list, seq_return",
     [
         (["10 OK", "20 OK", "5 OFF", "40 OK"],
          "Entry error after line 20 - lines should be in "
-         "sequential order.  Exiting.\n"
+         "sequential order.  Exiting."
          ),
         (["10 OK", "200 OFF", "30 OK", "40 OK"],
          "Entry error after line 200 - lines should be in "
-         "sequential order.  Exiting.\n"
+         "sequential order.  Exiting."
          ),
         (["10 OK", "200 OFF", "3 OFF", "40 OK"],
          "Entry error after line 200 - lines should be in "
-         "sequential order.  Exiting.\n"
+         "sequential order.  Exiting."
          ),
         (["100 OFF", "20 OK", "30 OK", "40 OK"],
          "Entry error after line 100 - lines should be in "
-         "sequential order.  Exiting.\n"
+         "sequential order.  Exiting."
          ),
         (["10 OK", "OFF", "30 OK", "40 OK"],
          "Entry error after line 10 - each line should start with a line "
-         "number.  Exiting.\n"
+         "number.  Exiting."
          ),
         (["OFF", "20OK", "30 ON", "40 OK"],
          "Entry error after line 0 - each line should start with a line "
-         "number.  Exiting.\n"
+         "number.  Exiting."
          ),
         (["20OK", "ON"],
          "Entry error after line 20 - each line should start with a line "
-         "number.  Exiting.\n"
+         "number.  Exiting."
          ),
         (["20 OK", "10 ON"],
          "Entry error after line 20 - lines should be in "
-         "sequential order.  Exiting.\n"
+         "sequential order.  Exiting."
          ),
     ],
 )
-def test_check_line_number_seq_bad(capsys, lines_list, term_capture):
+def test_check_line_num_seq_bad(lines_list, seq_return):
     """
-    Unit test to check that function check_line_number_seq() is propery
+    Unit test to check that function check_line_num_seq() is propery
     identifying cases where lines either don't start with an integer line
     number or have line numbers out of sequence.
     """
-    with pytest.raises(SystemExit):
-        check_line_number_seq(lines_list)
-    capture = capsys.readouterr()
-    assert capture.out == term_capture
+    assert check_line_number_seq(lines_list) == seq_return
 
 
 @pytest.mark.parametrize(

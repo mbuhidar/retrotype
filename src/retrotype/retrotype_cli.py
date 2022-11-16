@@ -125,7 +125,9 @@ def command_line_runner(argv=None, width=None):
         sys.exit(1)
 
     # check each line to insure each starts with a line number
-    check_line_number_seq(lines_list)
+    if check_line_number_seq(lines_list):
+        print(check_line_number_seq(lines_list))
+        sys.exit(1)
 
     # Create lines list while checking for loose brackets/braces and converting
     # to common special character codes in braces
