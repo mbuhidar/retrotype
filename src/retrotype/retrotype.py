@@ -6,6 +6,7 @@ emulator or on original hardware.
 
 from os import remove
 import re
+import sys
 
 # import char_maps.py: Module containing Commodore to magazine conversion maps
 try:
@@ -70,7 +71,7 @@ def confirm_overwrite(filename):
     return overwrite.lower() == 'y'
 
 
-def check_line_num_seq(lines_list):
+def check_line_number_seq(lines_list):
     """Check each line in the program that either does not start with a line
        number or starts with an out of sequence line number.
 
@@ -78,7 +79,7 @@ def check_line_num_seq(lines_list):
         lines_list (list): List of lines (str) in program.
 
     Returns:
-        string: sequence error message text
+        None: implicit return
     """
 
     line_no = 0  # handles case where first line does not have a line number
@@ -89,11 +90,16 @@ def check_line_num_seq(lines_list):
             ln_num_buffer.append(line_no)
 
             if not ln_num_buffer[0] < ln_num_buffer[1]:
-                return f"Entry error after line {ln_num_buffer[0]} - lines should be in sequential order.  Exiting."
+                print("Entry error after line "
+                      f"{ln_num_buffer[0]} - lines should be in sequential "
+                      "order.  Exiting.")
+                sys.exit(1)
             ln_num_buffer.pop(0)
 
         except ValueError:
-            return f"Entry error after line {line_no} - each line should start with a line number.  Exiting."
+            print(f"Entry error after line {line_no} - each line should start "
+                  "with a line number.  Exiting.")
+            sys.exit(1)
 
 
 def ahoy_lines_list(lines_list):
