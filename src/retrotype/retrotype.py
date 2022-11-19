@@ -6,6 +6,7 @@ emulator or on original hardware.
 
 from os import remove
 import re
+from typing import List, Union, Tuple
 
 # import char_maps.py: Module containing Commodore to magazine conversion maps
 try:
@@ -14,7 +15,7 @@ except ImportError:  # Case for direct python execution
     import char_maps
 
 
-def read_file(filename):
+def read_file(filename: str) -> List[str]:
     """Opens and reads magazine source, strips whitespace, and
        returns a list of lines converted to lowercase
 
@@ -36,7 +37,7 @@ def read_file(filename):
         return lower_lines
 
 
-def write_binary(filename, int_list):
+def write_binary(filename: str, int_list: List[int]) -> None: 
     """Write binary file readable on Commodore computers or emulators
 
     Args:
@@ -63,14 +64,14 @@ def write_binary(filename, int_list):
             print(f'File "{filename}" not overwritten.\n')
 
 
-def confirm_overwrite(filename):
+def confirm_overwrite(filename: str) -> bool:
 
     overwrite = input(f'Output file "{filename}" already exists. '
                       'Overwrite? (Y = yes) ')
     return overwrite.lower() == 'y'
 
 
-def check_line_num_seq(lines_list):
+def check_line_num_seq(lines_list: List[str]) -> Union[str, None]:
     """Check each line in the program that either does not start with a line
        number or starts with an out of sequence line number.
 
@@ -78,7 +79,7 @@ def check_line_num_seq(lines_list):
         lines_list (list): List of lines (str) in program.
 
     Returns:
-        string: sequence error message text
+        string: sequence error message text or None
     """
 
     line_no = 0  # handles case where first line does not have a line number
@@ -94,7 +95,7 @@ def check_line_num_seq(lines_list):
 
         except ValueError:
             return f"Entry error after line {line_no} - each line should start with a line number.  Exiting."
-
+    return None
 
 def ahoy_lines_list(lines_list):
     """For each line in the program, convert Ahoy special characters to Petcat
@@ -185,7 +186,7 @@ def ahoy_lines_list(lines_list):
     return new_lines
 
 
-def split_line_num(line):
+def split_line_num(line: str) -> Tuple[int, str]:
     """Split each line into line number and remaining line text
 
     Args:
@@ -208,7 +209,7 @@ def split_line_num(line):
 
 
 # manage the tokenization process for each line text string
-def scan_manager(ln):
+def scan_manager(ln: str) -> List[int]:
     in_quotes = False
     in_remark = False
     bytestr = []
@@ -227,7 +228,7 @@ def scan_manager(ln):
 
 # scan each line segement and convert to tokenized bytes.
 # returns byte and remaining line segment
-def _scan(ln, tokenize=True):
+def _scan(ln: str, tokenize: bool = True) -> Tuple[int, str]:
     """Scan beginning of each line for BASIC keywords, petcat special
        characters, or ascii characters, convert to tokenized bytes, and
        return remaining line segment after converted characters are removed
@@ -273,7 +274,7 @@ def _scan(ln, tokenize=True):
     return (char_val, ln[1:])
 
 
-def ahoy1_checksum(byte_list):
+def ahoy1_checksum(byte_list: List[int]) -> str:
     '''
     Function to create Ahoy checksums from passed in byte list to match the
     codes printed in the magazine to check each line for typed in accuracy.
@@ -301,7 +302,7 @@ def ahoy1_checksum(byte_list):
     return checksum
 
 
-def ahoy2_checksum(byte_list):
+def ahoy2_checksum(byte_list: List[int]) -> str:
     '''
     Function to create Ahoy checksums from passed in byte list to match the
     codes printed in the magazine to check each line for typed in accuracy.
@@ -348,7 +349,7 @@ def ahoy2_checksum(byte_list):
     return checksum
 
 
-def ahoy3_checksum(line_num, byte_list):
+def ahoy3_checksum(line_num: int, byte_list: List[int]) -> str:
     """
     Function to create Ahoy checksums from passed in line number and
     byte list to match the codes printed in the magazine to check each
@@ -400,7 +401,7 @@ def ahoy3_checksum(line_num, byte_list):
     return checksum
 
 
-def write_checksums(filename, ahoy_checksums):
+def write_checksums(filename: str, ahoy_checksums: List[str]) -> None:
 
     output = []
     # Print each line number, code combination in matrix format

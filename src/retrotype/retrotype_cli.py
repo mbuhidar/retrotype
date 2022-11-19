@@ -9,6 +9,7 @@ from argparse import RawTextHelpFormatter
 from os import get_terminal_size
 import sys
 import math
+from typing import List
 
 from retrotype import (read_file,
                        check_line_num_seq,
@@ -91,10 +92,10 @@ def parse_args(argv):
     return parser.parse_args(argv)
 
 
-def print_checksums(ahoy_checksums, terminal_width):
+def print_checksums(ahoy_checksums: List[str], terminal_width: int) -> None:
 
     # Determine number of columns to print based on terminal window width
-    columns = int(terminal_width / 12)
+    columns = terminal_width // 12
     # Determine number of rows based on column count
     rows = math.ceil(len(ahoy_checksums) / columns)
 
