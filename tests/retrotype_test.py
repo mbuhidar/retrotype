@@ -1,19 +1,19 @@
 from io import StringIO
 import pytest
 
-from retrotype.retrotype import (read_file,
-                                 check_line_num_seq,
-                                 ahoy_lines_list,
-                                 split_line_num,
-                                 _scan,
-                                 scan_manager,
-                                 write_binary,
-                                 ahoy1_checksum,
-                                 ahoy2_checksum,
-                                 ahoy3_checksum,
-                                 confirm_overwrite,
-                                 write_checksums,
-                                 )
+from retrotype import (read_file,
+                       check_line_num_seq,
+                       ahoy_lines_list,
+                       split_line_num,
+                       _scan,
+                       scan_manager,
+                       write_binary,
+                       ahoy1_checksum,
+                       ahoy2_checksum,
+                       ahoy3_checksum,
+                       confirm_overwrite,
+                       write_checksums,
+                       )
 
 
 @pytest.fixture
