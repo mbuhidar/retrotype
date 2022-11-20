@@ -6,7 +6,7 @@ emulator or on original hardware.
 
 from os import remove
 import re
-from typing import List, Union, Tuple
+from typing import List, Optional, Tuple
 
 # import char_maps.py: Module containing Commodore to magazine conversion maps
 try:
@@ -71,7 +71,7 @@ def confirm_overwrite(filename: str) -> bool:
     return overwrite.lower() == 'y'
 
 
-def check_line_num_seq(lines_list: List[str]) -> Union[str, None]:
+def check_line_num_seq(lines_list: List[str]) -> Optional[str]:
     """Check each line in the program that either does not start with a line
        number or starts with an out of sequence line number.
 
