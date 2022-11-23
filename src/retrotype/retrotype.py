@@ -9,10 +9,7 @@ import re
 from typing import List, Optional, Tuple
 
 # import char_maps.py: Module containing Commodore to magazine conversion maps
-try:
-    from retrotype import char_maps as char_maps
-except ImportError:  # Case for direct python execution
-    import char_maps
+from retrotype.char_maps import PETCAT_TOKENS, SHIFT_CMDRE_TOKENS, TOKENS_V2, AHOY_TO_PETCAT
 
 
 def read_file(filename: str) -> List[str]:
@@ -136,8 +133,8 @@ def ahoy_lines_list(lines_list):
 
         for item in code_split:
 
-            if item.upper() in char_maps.AHOY_TO_PETCAT:
-                new_codes.append(char_maps.AHOY_TO_PETCAT[item.upper()])
+            if item.upper() in AHOY_TO_PETCAT:
+                new_codes.append(AHOY_TO_PETCAT[item.upper()])
 
             elif re.match(r"{\d+\s?\".+?\"}", item):
                 # Extract number of times to repeat special character
@@ -145,12 +142,12 @@ def ahoy_lines_list(lines_list):
                 # Get the string inside the brackets and strip quotes on ends
                 char_code = re.search(r"\".+?\"", item).group()[1:-1]
 
-                if char_code.upper() in char_maps.AHOY_TO_PETCAT:
-                    new_codes.append(char_maps.AHOY_TO_PETCAT
+                if char_code.upper() in AHOY_TO_PETCAT:
+                    new_codes.append(AHOY_TO_PETCAT
                                      [char_code.upper()])
 
                     while char_count > 1:
-                        new_codes.append(char_maps.AHOY_TO_PETCAT
+                        new_codes.append(AHOY_TO_PETCAT
                                          [char_code.upper()])
                         str_split.insert(num + 1, '')
                         num += 1
@@ -249,19 +246,19 @@ def _scan(ln: str, tokenize: bool = True) -> Tuple[int, str]:
 
     # check if each line passed in starts with a petcat special character
     # if so, return value of token and line with token string removed
-    for (token, value) in char_maps.PETCAT_TOKENS:
+    for (token, value) in PETCAT_TOKENS:
         if ln.startswith(token):
             return (value, ln[len(token):])
     # check if each line passed in starts with shifted or commodore special
     # character.  if so, return value of token, line with token string removed
-    for (token, value) in char_maps.SHIFT_CMDRE_TOKENS:
+    for (token, value) in SHIFT_CMDRE_TOKENS:
         if ln.startswith(token):
             return (value, ln[len(token):])
     # if tokenize flag is True (i.e. line beginning is not inside quotes or
     # after a REM statement), check if line starts with a BASIC keyword
     # if so, return value of token and line with BASIC keyword removed
     if tokenize:
-        for (token, value) in char_maps.TOKENS_V2:
+        for (token, value) in TOKENS_V2:
             if ln.startswith(token):
                 return (value, ln[len(token):])
     # for characters without token values, convert to unicode (ascii) value
