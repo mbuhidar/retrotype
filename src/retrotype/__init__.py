@@ -9,3 +9,7 @@ from retrotype.retrotype import (read_file,
                                  write_binary,
                                  write_checksums,
                                  )
+
+from retrotype.retrotype import (_scan,
+                                 confirm_overwrite,
+                                )

@@ -34,4 +34,4 @@ where = ["src"]  # list of folders that contain the packages (["."] by default)
 Homepage = "https://github.com/mbuhidar/retrotype"
 
 [project.scripts]
-retrotype_cli = "retrotype.retrotype_cli:command_line_runner"
+retrotype_cli = "retrotype_cli:command_line_runner"
