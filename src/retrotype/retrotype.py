@@ -9,7 +9,11 @@ import re
 from typing import List, Optional, Tuple
 
 # import char_maps.py: Module containing Commodore to magazine conversion maps
-from retrotype.char_maps import PETCAT_TOKENS, SHIFT_CMDRE_TOKENS, TOKENS_V2, AHOY_TO_PETCAT
+from retrotype.char_maps import (PETCAT_TOKENS,
+                                 SHIFT_CMDRE_TOKENS,
+                                 TOKENS_V2,
+                                 AHOY_TO_PETCAT,
+                                 )
 
 
 def read_file(filename: str) -> List[str]:
@@ -31,7 +35,7 @@ def read_file(filename: str) -> List[str]:
             if not line.strip():
                 continue
             lower_lines.append(line.rstrip().lower())
-        return lower_lines
+    return lower_lines
 
 
 def write_binary(filename: str, int_list: List[int]) -> None: 
@@ -93,6 +97,7 @@ def check_line_num_seq(lines_list: List[str]) -> Optional[str]:
         except ValueError:
             return f"Entry error after line {line_no} - each line should start with a line number.  Exiting."
     return None
+
 
 def ahoy_lines_list(lines_list):
     """For each line in the program, convert Ahoy special characters to Petcat

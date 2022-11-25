@@ -12,4 +12,4 @@ from retrotype.retrotype import (read_file,
 
 from retrotype.retrotype import (_scan,
                                  confirm_overwrite,
-                                )
+                                 )
