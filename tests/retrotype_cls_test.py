@@ -17,7 +17,10 @@ from retrotype import (read_file,
                        )
 '''
 
-from retrotype.retrotype_cls import TextListing
+from retrotype.retrotype_cls import TextListing, TokenizedLine
+
+
+# Tests for TextListing class
 
 @pytest.fixture
 def infile_data():
@@ -202,6 +205,51 @@ def test_ahoy_lines_list(lines_list, new_lines):
     assert tl.ahoy_lines_list(lines_list) == new_lines
 
 
+# Tests for TokenizedLine class
+
+@pytest.mark.parametrize(
+    "line, bytestr",
+    [
+        ('rem lawn', [143, 32, 76, 65, 87, 78, 0]),
+        ('goto110', [137, 49, 49, 48, 0]),
+        ('printtab(10);sc$', [153, 163, 49, 48, 41, 59, 83, 67, 36, 0]),
+        ('printtab(16)"{lgrn}{down}l',
+         [153, 163, 49, 54, 41, 34, 153, 17, 76, 0]),
+        ('data15,103,255,169',
+         [131, 49, 53, 44, 49, 48, 51, 44, 50, 53, 53, 44, 49, 54, 57, 0]),
+    ],
+)
+def test_scan_manager(line, bytestr):
+    """
+    Unit test to check that function scan_manager() is properly managing the
+    conversion of a line of text to a list of tokenized bytes in decimal form.
+    """
+    tkln = TokenizedLine(line)
+    assert tkln.scan_manager() == bytestr
+
+
+@pytest.mark.parametrize(
+    "line, tokenize, byte, remaining_line",
+    [
+        (' space test', False, 32, 'space test'),
+        ('goto11', True, 137, '11'),
+        ('goto11', False, 71, 'oto11'),
+        ('rem start mower', True, 143, ' start mower'),
+        (' start mower', False, 32, 'start mower'),
+        ('{wht}"tab(32)', True, 5, '"tab(32)'),
+        ('{c g} test commodore-g', True, 165, ' test commodore-g'),
+        ('{s ep}start mower', True, 169, 'start mower'),
+    ],
+)
+def test__scan(line, tokenize, byte, remaining_line):
+    """
+    Unit test to check that function _scan() is properly converting the start
+    of each passed in line to a tokenized byte for BASIC keywords, petcat
+    special characters, and alphanumeric characters.
+    """
+    tkln = TokenizedLine(line)
+    assert tkln._scan(tokenize) == (byte, remaining_line)
+
 '''
 def test_write_binary(tmpdir):
     """
@@ -245,47 +293,6 @@ def test_confirm_overwrite(capsys, monkeypatch, user_entry, return_value):
                   'Overwrite? (Y = yes) '
     assert err == ''
 
-
-@pytest.mark.parametrize(
-    "ln, bytestr",
-    [
-        ('rem lawn', [143, 32, 76, 65, 87, 78, 0]),
-        ('goto110', [137, 49, 49, 48, 0]),
-        ('printtab(10);sc$', [153, 163, 49, 48, 41, 59, 83, 67, 36, 0]),
-        ('printtab(16)"{lgrn}{down}l',
-         [153, 163, 49, 54, 41, 34, 153, 17, 76, 0]),
-        ('data15,103,255,169',
-         [131, 49, 53, 44, 49, 48, 51, 44, 50, 53, 53, 44, 49, 54, 57, 0]),
-    ],
-)
-def test_scan_manager(ln, bytestr):
-    """
-    Unit test to check that function scan_manager() is properly managing the
-    conversion of a line of text to a list of tokenized bytes in decimal form.
-    """
-    assert scan_manager(ln) == bytestr
-
-
-@pytest.mark.parametrize(
-    "ln, tokenize, byte, remaining_line",
-    [
-        (' space test', False, 32, 'space test'),
-        ('goto11', True, 137, '11'),
-        ('goto11', False, 71, 'oto11'),
-        ('rem start mower', True, 143, ' start mower'),
-        (' start mower', False, 32, 'start mower'),
-        ('{wht}"tab(32)', True, 5, '"tab(32)'),
-        ('{c g} test commodore-g', True, 165, ' test commodore-g'),
-        ('{s ep}start mower', True, 169, 'start mower'),
-    ],
-)
-def test__scan(ln, tokenize, byte, remaining_line):
-    """
-    Unit test to check that function _scan() is properly converting the start
-    of each passed in line to a tokenized byte for BASIC keywords, petcat
-    special characters, and alphanumeric characters.
-    """
-    assert _scan(ln, tokenize) == (byte, remaining_line)
 
 
 @pytest.mark.parametrize(

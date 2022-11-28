@@ -11,10 +11,9 @@ import sys
 import math
 from typing import List
 
-from retrotype.retrotype_cls import TextListing
+from retrotype.retrotype_cls import TextListing, TokenizedLine
 
-from retrotype import (scan_manager,
-                       ahoy1_checksum,
+from retrotype import (ahoy1_checksum,
                        ahoy2_checksum,
                        ahoy3_checksum,
                        write_binary,
@@ -157,11 +156,13 @@ def command_line_runner(argv=None, width=None):
         # split each line into line number and remaining text
         (line_num, line_txt) = tl.split_line_num(line)
 
+        tkln = TokenizedLine(line_txt)
+
         token_ln = []
         # add load address at start of first line only
         if addr == int(args.loadaddr[0], 16):
             token_ln.append(addr.to_bytes(2, 'little'))
-        byte_list = scan_manager(line_txt)
+        byte_list = tkln.scan_manager()
 
         addr = addr + len(byte_list) + 4
 

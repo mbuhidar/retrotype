@@ -1,5 +1,5 @@
-import re
 from typing import List, Optional, Tuple
+import re
 
 # import char_maps.py: Module containing Commodore to magazine conversion maps
 from retrotype.char_maps import (PETCAT_TOKENS,
@@ -180,7 +180,7 @@ class TextListing():
             if new_codes:
                 new_codes.append('')
 
-                new_line = []
+                new_line: List[str] = []
 
                 # piece the string segments and petcat codes back together
                 for count in range(len(new_codes)):
@@ -192,6 +192,79 @@ class TextListing():
             new_lines.append(''.join(new_line))
 
         return new_lines
+
+
+class TokenizedLine():
+    """
+    """
+
+    def __init__(self, line_text: str) -> None:
+        self.line_text = line_text
+
+    # manage the tokenization process for each line text string
+    def scan_manager(self) -> List[int]:
+        in_quotes = False
+        in_remark = False
+        byte_list = []
+
+        while self.line_text:
+            (byte, self.line_text) = self._scan(tokenize=not
+                                                (in_quotes or in_remark))
+            # if byte is not None:
+            byte_list.append(byte)
+            if byte == ord('"'):
+                in_quotes = not in_quotes
+            if byte == 143:
+                in_remark = True
+        byte_list.append(0)
+        return byte_list
+
+    # scan each line segement and convert to tokenized bytes.
+    # returns byte and remaining line segment
+    def _scan(self, tokenize: bool = True) -> Tuple[int, str]:
+        """Scan beginning of each line for BASIC keywords, petcat special
+           characters, or ascii characters, convert to tokenized bytes, and
+           return remaining line segment after converted characters are removed
+
+        Args:
+            ln (str): Text of each line segment to parse and convert
+            tokenize (bool): Flag to indicate if start of line segment should be
+                tokenized (False if line segment start is within quotes or after
+                a REM statement)
+
+        Returns:
+            tuple consisting of:
+                character/token value (int): Decimal value of ascii character or
+                    tokenized word
+                remainder of line (str): Text for remainder of line with keyword,
+                    specical character, or alphanumeric character stripped
+        """
+
+        # check if each line passed in starts with a petcat special character
+        # if so, return value of token and line with token string removed
+        for (token, value) in PETCAT_TOKENS:
+            if self.line_text.startswith(token):
+                return (value, self.line_text[len(token):])
+        # check if each line passed in starts with shifted or commodore special
+        # character.  if so, return value of token, line with token string removed
+        for (token, value) in SHIFT_CMDRE_TOKENS:
+            if self.line_text.startswith(token):
+                return (value, self.line_text[len(token):])
+        # if tokenize flag is True (i.e. line beginning is not inside quotes or
+        # after a REM statement), check if line starts with a BASIC keyword
+        # if so, return value of token and line with BASIC keyword removed
+        if tokenize:
+            for (token, value) in TOKENS_V2:
+                if self.line_text.startswith(token):
+                    return (value, self.line_text[len(token):])
+        # for characters without token values, convert to unicode (ascii) value
+        # and, for latin letters, shift values by -32 to account for difference
+        # between ascii and petscii used by Commodore BASIC
+        # finally, return character value and line with character removed
+        char_value = ord(self.line_text[0])
+        if char_value >= 97 and char_value <= 122:
+            char_value -= 32
+        return (char_value, self.line_text[1:])
 
 
 class Checksums():
