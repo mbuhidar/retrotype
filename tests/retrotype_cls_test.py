@@ -1,23 +1,7 @@
 from io import StringIO
 import pytest
 
-'''
-from retrotype import (read_file,
-                       check_line_num_seq,
-                       ahoy_lines_list,
-                       split_line_num,
-                       _scan,
-                       scan_manager,
-                       write_binary,
-                       ahoy1_checksum,
-                       ahoy2_checksum,
-                       ahoy3_checksum,
-                       confirm_overwrite,
-                       write_checksums,
-                       )
-'''
-
-from retrotype.retrotype_cls import TextListing, TokenizedLine
+from retrotype.retrotype_cls import TextListing, TokenizedLine, Checksums, OutputFiles
 
 
 # Tests for TextListing class
@@ -250,50 +234,8 @@ def test__scan(line, tokenize, byte, remaining_line):
     tkln = TokenizedLine(line)
     assert tkln._scan(tokenize) == (byte, remaining_line)
 
-'''
-def test_write_binary(tmpdir):
-    """
-    Unit test to check that function write_binary() is properly writing a list
-    of decimals to a binary file.
-    """
-    file = tmpdir.join('output.prg')
-    # For reference, the ahoy input for the byte list below is:
-    # 10 print"hello"
-    # 20 goto10
-    write_binary(file, [1, 8, 16, 8, 10, 0, 153, 40, 34,
-                        72, 69, 76, 76, 79, 34, 41, 0,
-                        24, 8, 20, 0, 137, 49, 48, 0, 0, 0])
-    with open(file, 'rb') as f:
-        contents = f.read()
 
-    assert contents == b'\x01\x08\x10\x08\n\x00\x99("HELLO")\
-\x00\x18\x08\x14\x00\x8910\x00\x00\x00'
-
-
-@pytest.mark.parametrize(
-    "user_entry, return_value",
-    [
-        ('y\n', True),
-        ('Y\n', True),
-        ('n\n', False),
-        ('nope\n', False),
-        ('\n', False),
-    ],
-)
-def test_confirm_overwrite(capsys, monkeypatch, user_entry, return_value):
-    """
-    Unit test to check that function confirm_overwrite() is properly handling
-    user input properly.
-    """
-    monkeypatch.setattr('sys.stdin', StringIO(user_entry))
-    overwrite = confirm_overwrite('test_file.prg')
-    out, err = capsys.readouterr()
-    assert overwrite == return_value
-    assert out == 'Output file "test_file.prg" already exists. ' \
-                  'Overwrite? (Y = yes) '
-    assert err == ''
-
-
+# Tests for Checksums class
 
 @pytest.mark.parametrize(
     "byte_list, checksum",
@@ -322,7 +264,9 @@ def test_ahoy1_checksum(byte_list, checksum):
     Unit test to check that function ahoy1_checksum() is properly calculating
     and returning the proper ahoy checksum code.
     """
-    assert ahoy1_checksum(byte_list) == checksum
+    line_num = 10
+    cs = Checksums(line_num, byte_list)
+    assert cs.ahoy1_checksum() == checksum
 
 
 @pytest.mark.parametrize(
@@ -356,7 +300,9 @@ def test_ahoy2_checksum(byte_list, checksum):
     Unit test to check that function ahoy2_checksum() is properly calculating
     and returning the proper ahoy checksum code.
     """
-    assert ahoy2_checksum(byte_list) == checksum
+    line_num = 10
+    cs = Checksums(line_num, byte_list)
+    assert cs.ahoy2_checksum() == checksum
 
 
 @pytest.mark.parametrize(
@@ -383,8 +329,11 @@ def test_ahoy3_checksum(line_num, byte_list, checksum):
     Unit test to check that function ahoy3_checksum() is properly calculating
     and returning the proper ahoy checksum code.
     """
-    assert ahoy3_checksum(line_num, byte_list) == checksum
+    cs = Checksums(line_num, byte_list)
+    assert cs.ahoy3_checksum() == checksum
 
+
+# Tests for OutputFiles class
 
 @pytest.mark.parametrize(
     "ahoy_checksums, file_contents",
@@ -405,9 +354,67 @@ def test_write_checksums(tmpdir, ahoy_checksums, file_contents):
     """
     file = tmpdir.join('output.chk')
 
-    write_checksums(file, ahoy_checksums)
+    bytes_out = [1, ]
+
+    ofiles = OutputFiles(bytes_out, ahoy_checksums)
+
+    ofiles.write_checksums(file)
     with open(file, 'r') as f:
         contents = f.read()
 
     assert contents == file_contents
-'''
+
+
+def test_write_binary(tmpdir):
+    """
+    Unit test to check that function write_binary() is properly writing a list
+    of decimals to a binary file.
+    """
+
+    file = tmpdir.join('output.prg')
+    bytes_out = [1, 8, 16, 8, 10, 0, 153, 40, 34, 72, 69, 76, 76, 79, 34, 41, 0, 24, 8, 20, 0, 137, 49, 48, 0, 0, 0]
+    checksums = []
+
+    ofiles = OutputFiles(bytes_out, checksums)
+
+    # For reference, the ahoy input for the byte list below is:
+    # 10 print"hello"
+    # 20 goto10
+    ofiles.write_binary(file)
+
+    with open(file, 'rb') as f:
+        contents = f.read()
+
+    assert contents == b'\x01\x08\x10\x08\n\x00\x99("HELLO")\
+\x00\x18\x08\x14\x00\x8910\x00\x00\x00'
+
+
+@pytest.mark.parametrize(
+    "user_entry, return_value",
+    [
+        ('y\n', True),
+        ('Y\n', True),
+        ('n\n', False),
+        ('nope\n', False),
+        ('\n', False),
+    ],
+)
+def test_confirm_overwrite(capsys, monkeypatch, user_entry, return_value):
+    """
+    Unit test to check that function confirm_overwrite() is properly handling
+    user input properly.
+    """
+    monkeypatch.setattr('sys.stdin', StringIO(user_entry))
+
+    filename = 'test_file.prg'
+    bytes_out = []
+    checksums = []
+
+    ofiles = OutputFiles(bytes_out, checksums)
+
+    overwrite = ofiles.confirm_overwrite(filename)
+    out, err = capsys.readouterr()
+    assert overwrite == return_value
+    assert out == 'Output file "test_file.prg" already exists. ' \
+                  'Overwrite? (Y = yes) '
+    assert err == ''

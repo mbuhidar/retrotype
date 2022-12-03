@@ -1,5 +1,6 @@
 from typing import List, Optional, Tuple
 import re
+from os import remove
 
 # import char_maps.py: Module containing Commodore to magazine conversion maps
 from retrotype.char_maps import (PETCAT_TOKENS,
@@ -268,11 +269,189 @@ class TokenizedLine():
 
 
 class Checksums():
-    pass
+
+    def __init__(self, line_num: int, byte_list: List[int]) -> None:
+        self.line_num = line_num
+        self.byte_list = byte_list
+
+    def ahoy1_checksum(self) -> str:
+        '''
+        Method to create Ahoy checksums from passed in byte list to match the
+        codes printed in the magazine to check each line for typed in accuracy.
+        Covers Ahoy Bug Repellent version for Mar-Apr 1984 issues.
+        '''
+
+        next_value = 0
+
+        for char_val in self.byte_list:
+            # Detect spaces that are outside of quotes and ignore them, else
+            # execute primary checksum generation algorithm
+            if char_val == 32:
+                continue
+            next_value = char_val + next_value
+            next_value = next_value << 1
+
+        xor_value = next_value
+        # get high nibble of xor_value
+        high_nib = (xor_value & 0xf0) >> 4
+        high_char_val = high_nib + 65  # 0x41
+        # get low nibble of xor_value
+        low_nib = xor_value & 0x0f
+        low_char_val = low_nib + 65  # 0x41
+        checksum = chr(high_char_val) + chr(low_char_val)
+        return checksum
+
+    def ahoy2_checksum(self) -> str:
+        '''
+        Method to create Ahoy checksums from passed in byte list to match the
+        codes printed in the magazine to check each line for typed in accuracy.
+        Covers Ahoy Bug Repellent version for May 1984-Apr 1987 issues.
+        '''
+
+        xor_value = 0
+        char_position = 1
+        carry_flag = 1
+        in_quotes = False
+
+        for char_val in self.byte_list:
+
+            # set carry flag to zero for char values less than ascii value for
+            # quote character since assembly code for repellent sets carry flag
+            # based on cmp 0x22 (decimal 34)
+
+            carry_flag = 0 if char_val < 34 else 1
+
+            # Detect quote symbol in line and toggle in-quotes flag
+            if char_val == 34:
+                in_quotes = not in_quotes
+
+            # Detect spaces that are outside of quotes and ignore them, else
+            # execute primary checksum generation algorithm
+            if char_val == 32 and in_quotes is False:
+                continue
+
+            next_value = char_val + xor_value + carry_flag
+            xor_value = next_value ^ char_position
+
+            # limit next value to fit in one byte
+            next_value = next_value & 255
+
+            char_position = char_position + 1
+
+        # get high nibble of xor_value
+        high_nib = (xor_value & 0xf0) >> 4
+        high_char_val = high_nib + 65  # 0x41
+        # get low nibble of xor_value
+        low_nib = xor_value & 0x0f
+        low_char_val = low_nib + 65  # 0x41
+        checksum = chr(high_char_val) + chr(low_char_val)
+        return checksum
+
+    def ahoy3_checksum(self) -> str:
+        """
+        Method to create Ahoy checksums from passed in line number and
+        byte list to match the codes printed in the magazine to check each
+        line for typed in accuracy. Covers the last Ahoy Bug Repellent
+        version introduced in May 1987.
+        """
+
+        xor_value = 0
+        char_position = 0
+        in_quotes = False
+
+        line_low = self.line_num % 256
+        line_hi = int(self.line_num / 256)
+
+        byte_line = [line_low] + [line_hi] + self.byte_list
+
+        # byte_list.insert(0, line_hi)
+        # byte_list.insert(0, line_low)
+
+        for char_val in byte_line:
+
+            # Detect quote symbol in line and toggle in-quotes flag
+            if char_val == 34:
+                in_quotes = not in_quotes
+
+            # Detect spaces that are outside of quotes and ignore them, else
+            # execute primary checksum generation algorithm
+            if char_val == 32 and in_quotes is False:
+                continue
+
+            next_value = char_val + xor_value
+
+            xor_value = next_value ^ char_position
+
+            # limit next value to fit in one byte
+            next_value = next_value & 255
+
+            char_position = char_position + 1
+
+        # get high nibble of xor_value
+        high_nib = (xor_value & 0xf0) >> 4
+        high_char_val = high_nib + 65  # 0x41
+        # high_char_val = high_char_val & 0x0f
+        # get low nibble of xor_value
+        low_nib = xor_value & 0x0f
+        low_char_val = low_nib + 65  # 0x41
+        # low_char_val = low_char_val & 0x0f
+        checksum = chr(high_char_val) + chr(low_char_val)
+        return checksum
 
 
-class Bytes():
-    pass
+class OutputFiles:
+
+    def __init__(self, bytes_out: List[int], checksums_out: List[str]) -> None:
+        self.bytes_out = bytes_out
+        self.checksums_out = checksums_out
+
+    def write_checksums(self, filename: str) -> None:
+        output = []
+
+        # Print each line number, code combination in matrix format
+        for checksum in self.checksums_out:
+            prt_line = str(checksum[0])
+            prt_code = str(checksum[1])
+            output.append(f'{prt_line} {prt_code}\n')
+
+        output.append(f'\nLines: {len(self.checksums_out)}\n')
+
+        with open(filename, 'w') as f:
+            for line in output:
+                f.write(line)
+
+    def write_binary(self, filename: str) -> None: 
+        """Write binary file readable on Commodore computers or emulators
+
+        Args:
+            filename (str): The file name of the file to write as binary
+            int_list (list): List of integers to convert to binary bytes and
+                output write to file
+
+        Returns:
+            None: Implicit return
+        """
+
+        print(f'Writing binary output file "{filename}"...\n')
+
+        try:
+            with open(filename, "xb") as file:
+                for byte in self.bytes_out:
+                    file.write(byte.to_bytes(1, byteorder='big'))
+                print(f'File "{filename}" written successfully.\n')
+
+        except FileExistsError:
+            if self.confirm_overwrite(filename):
+                remove(filename)
+                self.write_binary(filename)
+            else:
+                print(f'File "{filename}" not overwritten.\n')
+
+    def confirm_overwrite(self, filename) -> bool:
+
+        overwrite = input(f'Output file "{filename}" already exists. '
+                          'Overwrite? (Y = yes) ')
+        return overwrite.lower() == 'y'
 
 
 if __name__ == '__main__':

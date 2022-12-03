@@ -11,14 +11,7 @@ import sys
 import math
 from typing import List
 
-from retrotype.retrotype_cls import TextListing, TokenizedLine
-
-from retrotype import (ahoy1_checksum,
-                       ahoy2_checksum,
-                       ahoy3_checksum,
-                       write_binary,
-                       write_checksums,
-                       )
+from retrotype.retrotype_cls import TextListing, TokenizedLine, Checksums, OutputFiles
 
 
 def parse_args(argv):
@@ -164,6 +157,22 @@ def command_line_runner(argv=None, width=None):
             token_ln.append(addr.to_bytes(2, 'little'))
         byte_list = tkln.scan_manager()
 
+        cs = Checksums(line_num, byte_list)
+
+        # call checksum generator function to build list of tuples
+        if args.source[0] == 'ahoy1':
+            ahoy_checksums.append((line_num,
+                                   cs.ahoy1_checksum()))
+        elif args.source[0] == 'ahoy2':
+            ahoy_checksums.append((line_num, 
+                                   cs.ahoy2_checksum()))
+        elif args.source[0] == 'ahoy3':
+            ahoy_checksums.append((line_num,
+                                   cs.ahoy3_checksum()))
+        else:
+            print("Magazine format not yet supported.")
+            sys.exit(1)
+
         addr = addr + len(byte_list) + 4
 
         token_ln.extend((addr.to_bytes(2, 'little'),
@@ -171,41 +180,27 @@ def command_line_runner(argv=None, width=None):
 
         token_ln = [byte for sublist in token_ln for byte in sublist]
 
-        # call checksum generator function to build list of tuples
-        if args.source[0] == 'ahoy1':
-            ahoy_checksums.append((line_num,
-                                   ahoy1_checksum(byte_list)))
-        elif args.source[0] == 'ahoy2':
-            ahoy_checksums.append((line_num, 
-                                   ahoy2_checksum(byte_list)))
-        elif args.source[0] == 'ahoy3':
-            ahoy_checksums.append((line_num,
-                                   ahoy3_checksum(line_num, byte_list)))
-        else:
-            print("Magazine format not yet supported.")
-            sys.exit(1)
-
         out_list.append(token_ln)
 
     out_list.append([0, 0])
 
-    dec_list = [byte for sublist in out_list for byte in sublist]
+    bytes_out = [byte for sublist in out_list for byte in sublist]
 
     file_stem = args.file_in.split('.')[0]
-    bin_file = f'{file_stem}.prg'
+
+    ofiles = OutputFiles(bytes_out, ahoy_checksums)
 
     # Write binary file compatible with Commodore computers or emulators
-    write_binary(bin_file, dec_list)
+    ofiles.write_binary(f'{file_stem}.prg')
+
+    # Write text file containing line numbers, checksums, and line count
+    ofiles.write_checksums(f'{file_stem}.chk')
 
     # Print line checksums to terminal, formatted based on screen width
     print('Line Checksums:\n')
     if not width:
         width = get_terminal_size()[0]
     print_checksums(ahoy_checksums, width)
-
-    # Write text file containing line numbers, checksums, and line count
-    chk_file = f'{file_stem}.chk'
-    write_checksums(chk_file, ahoy_checksums)
 
 
 if __name__ == '__main__':
