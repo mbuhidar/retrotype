@@ -4,16 +4,17 @@ checks for errors, and converts to an executable file for use with an
 emulator or on original hardware.
 """
 
-from os import remove
 import re
+from os import remove
 from typing import List, Optional, Tuple
 
 # import char_maps.py: Module containing Commodore to magazine conversion maps
-from retrotype.char_maps import (PETCAT_TOKENS,
-                                 SHIFT_CMDRE_TOKENS,
-                                 TOKENS_V2,
-                                 AHOY_TO_PETCAT,
-                                 )
+from retrotype.char_maps import (
+    AHOY_TO_PETCAT,
+    PETCAT_TOKENS,
+    SHIFT_CMDRE_TOKENS,
+    TOKENS_V2,
+)
 
 
 def read_file(filename: str) -> List[str]:
@@ -38,7 +39,7 @@ def read_file(filename: str) -> List[str]:
     return lower_lines
 
 
-def write_binary(filename: str, int_list: List[int]) -> None: 
+def write_binary(filename: str, int_list: List[int]) -> None:
     """Write binary file readable on Commodore computers or emulators
 
     Args:
@@ -54,7 +55,7 @@ def write_binary(filename: str, int_list: List[int]) -> None:
     try:
         with open(filename, "xb") as file:
             for byte in int_list:
-                file.write(byte.to_bytes(1, byteorder='big'))
+                file.write(byte.to_bytes(1, byteorder="big"))
             print(f'File "{filename}" written successfully.\n')
 
     except FileExistsError:
@@ -67,9 +68,10 @@ def write_binary(filename: str, int_list: List[int]) -> None:
 
 def confirm_overwrite(filename: str) -> bool:
 
-    overwrite = input(f'Output file "{filename}" already exists. '
-                      'Overwrite? (Y = yes) ')
-    return overwrite.lower() == 'y'
+    overwrite = input(
+        f'Output file "{filename}" already exists. ' "Overwrite? (Y = yes) "
+    )
+    return overwrite.lower() == "y"
 
 
 def check_line_num_seq(lines_list: List[str]) -> Optional[str]:
@@ -115,8 +117,8 @@ def ahoy_lines_list(lines_list):
 
     for line in lines_list:
         # replace brackets with braces since Ahoy used both over time
-        line = line.replace('[', '{')
-        line = line.replace(']', '}')
+        line = line.replace("[", "{")
+        line = line.replace("]", "}")
 
         # split each line on ahoy special characters
         str_split = re.split(r"{\d+\s?\".[^{]*?\"}|{.[^{]*?}", line)
@@ -148,13 +150,11 @@ def ahoy_lines_list(lines_list):
                 char_code = re.search(r"\".+?\"", item).group()[1:-1]
 
                 if char_code.upper() in AHOY_TO_PETCAT:
-                    new_codes.append(AHOY_TO_PETCAT
-                                     [char_code.upper()])
+                    new_codes.append(AHOY_TO_PETCAT[char_code.upper()])
 
                     while char_count > 1:
-                        new_codes.append(AHOY_TO_PETCAT
-                                         [char_code.upper()])
-                        str_split.insert(num + 1, '')
+                        new_codes.append(AHOY_TO_PETCAT[char_code.upper()])
+                        str_split.insert(num + 1, "")
                         num += 1
                         char_count -= 1
 
@@ -162,7 +162,7 @@ def ahoy_lines_list(lines_list):
                     new_codes.append(char_code)
                     while char_count > 1:
                         new_codes.append(char_code)
-                        str_split.insert(num + 1, '')
+                        str_split.insert(num + 1, "")
                         num += 1
                         char_count -= 1
 
@@ -172,7 +172,7 @@ def ahoy_lines_list(lines_list):
 
         # add blank item to list of special characters prior to blending strs
         if new_codes:
-            new_codes.append('')
+            new_codes.append("")
 
             new_line = []
 
@@ -183,7 +183,7 @@ def ahoy_lines_list(lines_list):
         # handle case where line contained no special characters
         else:
             new_line = str_split
-        new_lines.append(''.join(new_line))
+        new_lines.append("".join(new_line))
 
     return new_lines
 
@@ -207,7 +207,7 @@ def split_line_num(line: str) -> Tuple[int, str]:
         acc.append(line[0])
         line = line[1:]
 
-    return (int(''.join(acc)), line.lstrip())
+    return (int("".join(acc)), line.lstrip())
 
 
 # manage the tokenization process for each line text string
@@ -253,19 +253,19 @@ def _scan(ln: str, tokenize: bool = True) -> Tuple[int, str]:
     # if so, return value of token and line with token string removed
     for (token, value) in PETCAT_TOKENS:
         if ln.startswith(token):
-            return (value, ln[len(token):])
+            return (value, ln[len(token) :])
     # check if each line passed in starts with shifted or commodore special
     # character.  if so, return value of token, line with token string removed
     for (token, value) in SHIFT_CMDRE_TOKENS:
         if ln.startswith(token):
-            return (value, ln[len(token):])
+            return (value, ln[len(token) :])
     # if tokenize flag is True (i.e. line beginning is not inside quotes or
     # after a REM statement), check if line starts with a BASIC keyword
     # if so, return value of token and line with BASIC keyword removed
     if tokenize:
         for (token, value) in TOKENS_V2:
             if ln.startswith(token):
-                return (value, ln[len(token):])
+                return (value, ln[len(token) :])
     # for characters without token values, convert to unicode (ascii) value
     # and, for latin letters, shift values by -32 to account for difference
     # between ascii and petscii used by Commodore BASIC
@@ -277,11 +277,11 @@ def _scan(ln: str, tokenize: bool = True) -> Tuple[int, str]:
 
 
 def ahoy1_checksum(byte_list: List[int]) -> str:
-    '''
+    """
     Function to create Ahoy checksums from passed in byte list to match the
     codes printed in the magazine to check each line for typed in accuracy.
     Covers Ahoy Bug Repellent version for Mar-Apr 1984 issues.
-    '''
+    """
 
     next_value = 0
 
@@ -295,21 +295,21 @@ def ahoy1_checksum(byte_list: List[int]) -> str:
 
     xor_value = next_value
     # get high nibble of xor_value
-    high_nib = (xor_value & 0xf0) >> 4
+    high_nib = (xor_value & 0xF0) >> 4
     high_char_val = high_nib + 65  # 0x41
     # get low nibble of xor_value
-    low_nib = xor_value & 0x0f
+    low_nib = xor_value & 0x0F
     low_char_val = low_nib + 65  # 0x41
     checksum = chr(high_char_val) + chr(low_char_val)
     return checksum
 
 
 def ahoy2_checksum(byte_list: List[int]) -> str:
-    '''
+    """
     Function to create Ahoy checksums from passed in byte list to match the
     codes printed in the magazine to check each line for typed in accuracy.
     Covers Ahoy Bug Repellent version for May 1984-Apr 1987 issues.
-    '''
+    """
 
     xor_value = 0
     char_position = 1
@@ -342,10 +342,10 @@ def ahoy2_checksum(byte_list: List[int]) -> str:
         char_position = char_position + 1
 
     # get high nibble of xor_value
-    high_nib = (xor_value & 0xf0) >> 4
+    high_nib = (xor_value & 0xF0) >> 4
     high_char_val = high_nib + 65  # 0x41
     # get low nibble of xor_value
-    low_nib = xor_value & 0x0f
+    low_nib = xor_value & 0x0F
     low_char_val = low_nib + 65  # 0x41
     checksum = chr(high_char_val) + chr(low_char_val)
     return checksum
@@ -392,11 +392,11 @@ def ahoy3_checksum(line_num: int, byte_list: List[int]) -> str:
         char_position = char_position + 1
 
     # get high nibble of xor_value
-    high_nib = (xor_value & 0xf0) >> 4
+    high_nib = (xor_value & 0xF0) >> 4
     high_char_val = high_nib + 65  # 0x41
     # high_char_val = high_char_val & 0x0f
     # get low nibble of xor_value
-    low_nib = xor_value & 0x0f
+    low_nib = xor_value & 0x0F
     low_char_val = low_nib + 65  # 0x41
     # low_char_val = low_char_val & 0x0f
     checksum = chr(high_char_val) + chr(low_char_val)
@@ -410,10 +410,10 @@ def write_checksums(filename: str, ahoy_checksums: List[str]) -> None:
     for checksum in ahoy_checksums:
         prt_line = str(checksum[0])
         prt_code = str(checksum[1])
-        output.append(f'{prt_line} {prt_code}\n')
+        output.append(f"{prt_line} {prt_code}\n")
 
-    output.append(f'\nLines: {len(ahoy_checksums)}\n')
+    output.append(f"\nLines: {len(ahoy_checksums)}\n")
 
-    with open(filename, 'w') as f:
+    with open(filename, "w") as f:
         for line in output:
             f.write(line)

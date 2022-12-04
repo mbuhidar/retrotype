@@ -5,18 +5,18 @@ c007:       lda $2c ; pointer to beginning of BASIC area (high byte)
 c009:       sta $fc ; store BASIC pointer hi byte in $fc (unused memory space)
 c00b: Lc00b ldy #$00
 c00d:       sty $fe ; store $00 in $fe (unused memory space)
-c00f:       jsr Sc125 ; increment the fb/fc pointers to BASIC location 
+c00f:       jsr Sc125 ; increment the fb/fc pointers to BASIC location
 c012:       nop
 c013:       lda ($fb),y ; load a with low byte of BASIC pointer, index by y
 c015:       bne Lc01a ; if next low byte not 0, inc low byte
 c017:       jmp Lc08a ; if next low byte is 0, inc hi byte
 
-c01a: Lc01a inc $fb ; routine to increment lo/hi bytes 
+c01a: Lc01a inc $fb ; routine to increment lo/hi bytes
 c01c:       bne Lc020
 c01e:       inc $fc
 c020: Lc020 jmp Lc02b ; goto print next line output
 
-c023:       4c 49 4e 45 20 23 20 00 ; "LINE #" 
+c023:       4c 49 4e 45 20 23 20 00 ; "LINE #"
 c02b: Lc02b lda #$23
 c02d:       ldy #$c0
 c02f:       jsr bSTROUT ; prints "LINE #"
@@ -73,8 +73,8 @@ c091:       ldx $3f
 c093:       lda $40
 c095:       jmp Lc0e7
 
-c098:       60 4c 49 4e 45 53 3a 20 00 ; RTS LINES: 
-c0a1: Sc0a1 lda #$f7 ; load a with low byte of message data 
+c098:       60 4c 49 4e 45 53 3a 20 00 ; RTS LINES:
+c0a1: Sc0a1 lda #$f7 ; load a with low byte of message data
 c0a3:       ldy #$c0 ; load y with high byte of message data
 c0a5:       jsr bSTROUT ; output message at y,a=c0f7 ('screen or printer?')
 c0a8:       lda #$03 ; load a with literal $03 (end of text char??)
@@ -100,7 +100,7 @@ c0d3:       ldx $fe
 c0d5:       jsr kCHKOUT
 c0d8:       jmp Lc149
 
-c0db:       60 ; shift-@ character?? 
+c0db:       60 ; shift-@ character??
 c0dc: Sc0dc jsr kCHROUT
 c0df: Lc0df lda $028d ; shift key indicator
 c0e2:       and #$01 ; AND with accumulator
@@ -115,10 +115,10 @@ c0f2:       lda #$04
 c0f4:       jmp kCLOSE
 
 c0f7:                           93 53 43 52 45 45 4e 20 4f ; clr/hm SCREEN O
-c100:       52 20 50 52 49 4e 54 45 52 20 3f 20 00 ; R PRINTER ?  
+c100:       52 20 50 52 49 4e 54 45 52 20 3f 20 00 ; R PRINTER ?
 c10d: Lc10d jmp Lc12c
 
-c110:       ea b1 fb c9 20 f0 06 ; ? reverse1 ? reverseI sp ? F? 
+c110:       ea b1 fb c9 20 f0 06 ; ? reverse1 ? reverseI sp ? F?
 c117: Lc117 txa
 c118:       adc ($fb),y
 c11a:       eor $fe
@@ -126,7 +126,7 @@ c11c:       tax
 c11d: Lc11d txa
 c11e:       jmp Lc058
 
-c121:       00 00 00 00 
+c121:       00 00 00 00
 c125: Sc125 inc $fb ; increment BASIC pointer low byte to next character
 c127:       bne Lc12b ; if low byte is not zero, return
 c129:       inc $fc ; if low byte is zero, increment high byte and return
@@ -147,8 +147,8 @@ c141:       bne Lc117
 c143:       dec $fe
 c145:       jmp Lc11d
 
-c148:       00 
+c148:       00
 c149: Lc149 lda #$0d
 c14b:       jmp kCHROUT
 
-c14e:       00 00 00 
+c14e:       00 00 00

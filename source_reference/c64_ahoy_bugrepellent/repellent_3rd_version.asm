@@ -3,18 +3,18 @@ Lc000               lda #$4f ; letter 'O'
                     ldx #$26 ; load x, y with c026 -> jsr kCHROUT after Lc018
                     ldy #$c0
                     cpy $0303 ; compare y with content at $0303 (High byte of BASIC loop)
-                    bne Lc018 ; branch if content 
+                    bne Lc018 ; branch if content
                     ldx #$83
                     ldy #$a4
                     lda #$46 ; character 'F'
-                    jsr kCHROUT 
-                    2c 
+                    jsr kCHROUT
+                    2c
 Lc018               lda #$4e ; letter 'N'
                     jsr kCHROUT ; completes word 'ON'
                     stx $0302
                     sty $0303
                     jmp Lc124
-                    
+
 Lc026               jsr bINLIN
                     stx $7a
                     sty $7b
@@ -25,7 +25,7 @@ Lc026               jsr bINLIN
                     stx $3a
                     bcc Lc03c
                     jmp $a496
-                    
+
 Lc03c               jsr bLINGET
                     jsr bCRUNCH
                     lda $0200
@@ -33,7 +33,7 @@ Lc03c               jsr bLINGET
                     lda #$4f
                     sta $0302
 Lc04c               jmp bINSLIN
-                    
+
 # main routine ################################################
 Lc04f               lda #$00
                     sta $02
@@ -110,7 +110,7 @@ Lc0d3               jsr kSTOP
                     bne Lc0de
                     jsr Sc121
 Lc0db               jmp Lc026
-                    
+
 Lc0de               inx
                     bne Lc0d3
                     iny
@@ -143,21 +143,21 @@ Lc111               sta $c133,x
                     bpl Lc105
 Lc11b               jsr Sc121
                     jmp bREADY
-                    
+
 Sc121               dec d020_vBorderCol
 Lc124               lda #$00
                     tax
                     tay
                     jmp kSETTIM
-                    
+
 Lc12b               ldy #$01
                     ora ($a0,x)
                     brk
-                    
+
 Lc130               brk
-                    
+
 Lc131               eor ($48,x)
                     sre $2159
                     brk
-                    
+
 Lc137               brk

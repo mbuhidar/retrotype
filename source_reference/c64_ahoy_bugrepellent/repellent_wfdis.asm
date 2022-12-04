@@ -16,7 +16,7 @@ c01c:                     bne Lc020
 c01e:                     inc $fc
 c020: Lc020               jmp Lc02b
 
-c023:                     4c 49 4e 45 20 23 20 00 
+c023:                     4c 49 4e 45 20 23 20 00
 c02b: Lc02b               lda #$23
 c02d:                     ldy #$c0
 c02f:                     jsr bSTROUT
@@ -73,7 +73,7 @@ c091:                     ldx $3f
 c093:                     lda $40
 c095:                     jmp Lc0e7
 
-c098:                     60 4c 49 4e 45 53 3a 20 00 
+c098:                     60 4c 49 4e 45 53 3a 20 00
 c0a1: Sc0a1               lda #$f7
 c0a3:                     ldy #$c0
 c0a5:                     jsr bSTROUT
@@ -100,7 +100,7 @@ c0d3:                     ldx $fe
 c0d5:                     jsr kCHKOUT
 c0d8:                     jmp Lc149
 
-c0db:                     60 
+c0db:                     60
 c0dc: Sc0dc               jsr kCHROUT
 c0df: Lc0df               lda $028d
 c0e2:                     and #$01
@@ -114,11 +114,11 @@ c0ef:                     jsr kCLRCHN
 c0f2:                     lda #$04
 c0f4:                     jmp kCLOSE
 
-c0f7:                                          93 53 43 52 45 45 4e 20 4f 
-c100:                     52 20 50 52 49 4e 54 45 52 20 3f 20 00 
+c0f7:                                          93 53 43 52 45 45 4e 20 4f
+c100:                     52 20 50 52 49 4e 54 45 52 20 3f 20 00
 c10d: Lc10d               jmp Lc12c
 
-c110:                     ea b1 fb c9 20 f0 06 
+c110:                     ea b1 fb c9 20 f0 06
 c117: Lc117               txa
 c118:                     adc ($fb),y
 c11a:                     eor $fe
@@ -126,7 +126,7 @@ c11c:                     tax
 c11d: Lc11d               txa
 c11e:                     jmp Lc058
 
-c121:                     00 00 00 00 
+c121:                     00 00 00 00
 c125: Sc125               inc $fb
 c127:                     bne Lc12b
 c129:                     inc $fc
@@ -147,8 +147,8 @@ c141:                     bne Lc117
 c143:                     dec $fe
 c145:                     jmp Lc11d
 
-c148:                     00 
+c148:                     00
 c149: Lc149               lda #$0d
 c14b:                     jmp kCHROUT
 
-c14e:                     00 00 00 
+c14e:                     00 00 00

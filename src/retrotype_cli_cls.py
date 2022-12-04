@@ -5,25 +5,29 @@ emulator or on original hardware.
 """
 
 import argparse
+import math
+import sys
 from argparse import RawTextHelpFormatter
 from os import get_terminal_size
-import sys
-import math
 from typing import List
 
-from retrotype.retrotype_cls import TextListing, TokenizedLine, Checksums, OutputFiles
+from retrotype.retrotype_cls import (
+    Checksums,
+    OutputFiles,
+    TextListing,
+    TokenizedLine,
+)
 
 
 def parse_args(argv):
     """Parses command line inputs and generate command line interface and
     documentation.
     """
-    parser = argparse.ArgumentParser(description=
-        "A tokenizer for Commodore BASIC typein programs. Supports Ahoy "
+    parser = argparse.ArgumentParser(
+        description="A tokenizer for Commodore BASIC typein programs. Supports Ahoy "
         "magazine\nprograms for C64.",
         formatter_class=RawTextHelpFormatter,
-        epilog=
-        "Notes for entering programs from Ahoy issues prior to November "
+        epilog="Notes for entering programs from Ahoy issues prior to November "
         "1984:\n\n"
         "In addition to the special character codes contained in braces \n"
         "in the magazine, Ahoy also used a shorthand convention for \n"
@@ -48,35 +52,48 @@ def parse_args(argv):
         "    {s UP_ARROW} - shifted up arrow symbol\n\n"
         "After the October 1984 issue, the over/under score representation\n"
         "was discontinued.  These special characters should be typed as\n"
-        "listed in the magazines after that issue.\n\n"
-       )
+        "listed in the magazines after that issue.\n\n",
+    )
 
     parser.add_argument(
-        "-l", "--loadaddr", type=str, nargs=1, required=False,
-        metavar="load_address", default=["0x0801"],
+        "-l",
+        "--loadaddr",
+        type=str,
+        nargs=1,
+        required=False,
+        metavar="load_address",
+        default=["0x0801"],
         help="Specifies the target BASIC memory address when loading:\n"
-             "- 0x0801 - C64 (default)\n"
-             "- 0x1001 - VIC20 Unexpanded\n"
-             "- 0x0401 - VIC20 +3K\n"
-             "- 0x1201 - VIC20 +8K\n"
-             "- 0x1201 - VIC20 +16\n"
-             "- 0x1201 - VIC20 +24K\n"
+        "- 0x0801 - C64 (default)\n"
+        "- 0x1001 - VIC20 Unexpanded\n"
+        "- 0x0401 - VIC20 +3K\n"
+        "- 0x1201 - VIC20 +8K\n"
+        "- 0x1201 - VIC20 +16\n"
+        "- 0x1201 - VIC20 +24K\n",
     )
 
     parser.add_argument(
-        "-s", "--source", choices=["ahoy1", "ahoy2", "ahoy3"], type=str,
-        nargs=1, required=False, metavar="source_format", default=["ahoy2"],
+        "-s",
+        "--source",
+        choices=["ahoy1", "ahoy2", "ahoy3"],
+        type=str,
+        nargs=1,
+        required=False,
+        metavar="source_format",
+        default=["ahoy2"],
         help="Specifies the magazine source for conversion and checksum:\n"
-             "ahoy1 - Ahoy magazine (Apr-May 1984)\n"
-             "ahoy2 - Ahoy magazine (Jun 1984-Apr 1987) (default)\n"
-             "ahoy3 - Ahoy magazine (May 1987-)\n"
+        "ahoy1 - Ahoy magazine (Apr-May 1984)\n"
+        "ahoy2 - Ahoy magazine (Jun 1984-Apr 1987) (default)\n"
+        "ahoy3 - Ahoy magazine (May 1987-)\n",
     )
 
     parser.add_argument(
-        "file_in", type=str, metavar="input_file",
+        "file_in",
+        type=str,
+        metavar="input_file",
         help="Specify the input file name including path.\n"
-             "Note:  Output file will use input file basename with\n"
-             "extension '.prg' for Commodore file format."
+        "Note:  Output file will use input file basename with\n"
+        "extension '.prg' for Commodore file format.",
     )
 
     return parser.parse_args(argv)
@@ -97,10 +114,10 @@ def print_checksums(ahoy_checksums: List[str], terminal_width: int) -> None:
                 prt_line = str(ahoy_checksums[indx][0])
                 prt_code = str(ahoy_checksums[indx][1])
                 left_space = 7 - len(prt_line) - len(prt_code)
-                print(" "*left_space, prt_line, prt_code, " "*2, end='')
-        print(end='\n')
+                print(" " * left_space, prt_line, prt_code, " " * 2, end="")
+        print(end="\n")
 
-    print(f'\nLines: {len(ahoy_checksums)}\n')
+    print(f"\nLines: {len(ahoy_checksums)}\n")
 
 
 def command_line_runner(argv=None, width=None):
@@ -123,18 +140,19 @@ def command_line_runner(argv=None, width=None):
         print(sequence_message)
         sys.exit(1)
 
-
     # Check for loose brackets/braces
     brace_error_line_num = tl.check_for_loose_braces(raw_listing)
     if brace_error_line_num:
-        print(f"Loose brace/bracket error in line: {brace_error_line_num}\n"
-                "Special characters should be enclosed in braces/brackets.\n"
-                "Please check for unmatched single brace/bracket in above "
-                "line.")
+        print(
+            f"Loose brace/bracket error in line: {brace_error_line_num}\n"
+            "Special characters should be enclosed in braces/brackets.\n"
+            "Please check for unmatched single brace/bracket in above "
+            "line."
+        )
         sys.exit(1)
 
     # Create lines list converting to common special character codes in braces
-    if args.source[0][:4] == 'ahoy':
+    if args.source[0][:4] == "ahoy":
         lines_list = tl.ahoy_lines_list(raw_listing)
     else:
         print("Magazine format not yet supported.")
@@ -154,29 +172,31 @@ def command_line_runner(argv=None, width=None):
         token_ln = []
         # add load address at start of first line only
         if addr == int(args.loadaddr[0], 16):
-            token_ln.append(addr.to_bytes(2, 'little'))
+            token_ln.append(addr.to_bytes(2, "little"))
         byte_list = tkln.scan_manager()
 
         cs = Checksums(line_num, byte_list)
 
         # call checksum generator function to build list of tuples
-        if args.source[0] == 'ahoy1':
-            ahoy_checksums.append((line_num,
-                                   cs.ahoy1_checksum()))
-        elif args.source[0] == 'ahoy2':
-            ahoy_checksums.append((line_num, 
-                                   cs.ahoy2_checksum()))
-        elif args.source[0] == 'ahoy3':
-            ahoy_checksums.append((line_num,
-                                   cs.ahoy3_checksum()))
+        if args.source[0] == "ahoy1":
+            ahoy_checksums.append((line_num, cs.ahoy1_checksum()))
+        elif args.source[0] == "ahoy2":
+            ahoy_checksums.append((line_num, cs.ahoy2_checksum()))
+        elif args.source[0] == "ahoy3":
+            ahoy_checksums.append((line_num, cs.ahoy3_checksum()))
         else:
             print("Magazine format not yet supported.")
             sys.exit(1)
 
         addr = addr + len(byte_list) + 4
 
-        token_ln.extend((addr.to_bytes(2, 'little'),
-                         line_num.to_bytes(2, 'little'), byte_list))
+        token_ln.extend(
+            (
+                addr.to_bytes(2, "little"),
+                line_num.to_bytes(2, "little"),
+                byte_list,
+            )
+        )
 
         token_ln = [byte for sublist in token_ln for byte in sublist]
 
@@ -186,22 +206,22 @@ def command_line_runner(argv=None, width=None):
 
     bytes_out = [byte for sublist in out_list for byte in sublist]
 
-    file_stem = args.file_in.split('.')[0]
+    file_stem = args.file_in.split(".")[0]
 
     ofiles = OutputFiles(bytes_out, ahoy_checksums)
 
     # Write binary file compatible with Commodore computers or emulators
-    ofiles.write_binary(f'{file_stem}.prg')
+    ofiles.write_binary(f"{file_stem}.prg")
 
     # Write text file containing line numbers, checksums, and line count
-    ofiles.write_checksums(f'{file_stem}.chk')
+    ofiles.write_checksums(f"{file_stem}.chk")
 
     # Print line checksums to terminal, formatted based on screen width
-    print('Line Checksums:\n')
+    print("Line Checksums:\n")
     if not width:
         width = get_terminal_size()[0]
     print_checksums(ahoy_checksums, width)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(command_line_runner())

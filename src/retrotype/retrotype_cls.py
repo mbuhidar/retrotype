@@ -1,18 +1,18 @@
-from typing import List, Optional, Tuple, Match
 import re
 from os import remove
+from typing import List, Optional, Tuple
 
 # import char_maps.py: Module containing Commodore to magazine conversion maps
-from retrotype.char_maps import (PETCAT_TOKENS,
-                                 SHIFT_CMDRE_TOKENS,
-                                 TOKENS_V2,
-                                 AHOY_TO_PETCAT,
-                                 )
+from retrotype.char_maps import (
+    AHOY_TO_PETCAT,
+    PETCAT_TOKENS,
+    SHIFT_CMDRE_TOKENS,
+    TOKENS_V2,
+)
 
 
-class TextListing():
-    """
-    """
+class TextListing:
+    """ """
 
     def __init__(self, filename: str) -> None:
         self.filename = filename
@@ -50,8 +50,12 @@ class TextListing():
             string: sequence error message text or None
         """
 
-        line_no = 0  # handles case where first line does not have a line number
-        ln_num_buffer = [0]  # first popped after three line numbers are appended
+        line_no = (
+            0  # handles case where first line does not have a line number
+        )
+        ln_num_buffer = [
+            0
+        ]  # first popped after three line numbers are appended
         for line in raw_listing:
             try:
                 line_no = self.split_line_num(line)[0]
@@ -84,7 +88,7 @@ class TextListing():
             acc.append(line[0])
             line = line[1:]
 
-        return (int(''.join(acc)), line.lstrip())
+        return (int("".join(acc)), line.lstrip())
 
     def check_for_loose_braces(self, listing: List[str]) -> Optional[str]:
         """Check each line for loose brackets/braces
@@ -99,8 +103,8 @@ class TextListing():
 
         for line in listing:
             # replace brackets with braces since both were used
-            line = line.replace('[', '{')
-            line = line.replace(']', '}')
+            line = line.replace("[", "{")
+            line = line.replace("]", "}")
 
             # split each line on special characters
             str_split = re.split(r"{\d+\s?\".[^{]*?\"}|{.[^{]*?}", line)
@@ -111,7 +115,7 @@ class TextListing():
                 if loose_brace is not None:
                     return str(self.split_line_num(line)[0])
 
-        return None 
+        return None
 
     def ahoy_lines_list(self, lines_list: List[str]) -> List[str]:
         """For each line in the program, convert Ahoy special characters to Petcat
@@ -129,8 +133,8 @@ class TextListing():
 
         for line in lines_list:
             # replace brackets with braces since Ahoy used both over time
-            line = line.replace('[', '{')
-            line = line.replace(']', '}')
+            line = line.replace("[", "{")
+            line = line.replace("]", "}")
 
             # split each line on ahoy special characters
             str_split = re.split(r"{\d+\s?\".[^{]*?\"}|{.[^{]*?}", line)
@@ -150,18 +154,16 @@ class TextListing():
 
                 elif re.match(r"{\d+\s?\".+?\"}", item):
                     # Extract number of times to repeat special character
-                    char_count = int(re.search(r"\d+\b", item).group())
+                    char_count = int(re.search(r"\d+\b", item).group())  # type: ignore
                     # Get the string inside the brackets and strip quotes
-                    char_code = re.search(r"\".+?\"", item).group()[1:-1]
+                    char_code = re.search(r"\".+?\"", item).group()[1:-1]  # type: ignore
 
                     if char_code.upper() in AHOY_TO_PETCAT:
-                        new_codes.append(AHOY_TO_PETCAT
-                                         [char_code.upper()])
+                        new_codes.append(AHOY_TO_PETCAT[char_code.upper()])
 
                         while char_count > 1:
-                            new_codes.append(AHOY_TO_PETCAT
-                                             [char_code.upper()])
-                            str_split.insert(num + 1, '')
+                            new_codes.append(AHOY_TO_PETCAT[char_code.upper()])
+                            str_split.insert(num + 1, "")
                             num += 1
                             char_count -= 1
 
@@ -169,7 +171,7 @@ class TextListing():
                         new_codes.append(char_code)
                         while char_count > 1:
                             new_codes.append(char_code)
-                            str_split.insert(num + 1, '')
+                            str_split.insert(num + 1, "")
                             num += 1
                             char_count -= 1
 
@@ -179,7 +181,7 @@ class TextListing():
 
             # add blank item to list of special characters prior to blending
             if new_codes:
-                new_codes.append('')
+                new_codes.append("")
 
                 new_line: List[str] = []
 
@@ -190,14 +192,13 @@ class TextListing():
             # handle case where line contained no special characters
             else:
                 new_line = str_split
-            new_lines.append(''.join(new_line))
+            new_lines.append("".join(new_line))
 
         return new_lines
 
 
-class TokenizedLine():
-    """
-    """
+class TokenizedLine:
+    """ """
 
     def __init__(self, line_text: str) -> None:
         self.line_text = line_text
@@ -209,8 +210,9 @@ class TokenizedLine():
         byte_list = []
 
         while self.line_text:
-            (byte, self.line_text) = self._scan(tokenize=not
-                                                (in_quotes or in_remark))
+            (byte, self.line_text) = self._scan(
+                tokenize=not (in_quotes or in_remark)
+            )
             # if byte is not None:
             byte_list.append(byte)
             if byte == ord('"'):
@@ -245,19 +247,19 @@ class TokenizedLine():
         # if so, return value of token and line with token string removed
         for (token, value) in PETCAT_TOKENS:
             if self.line_text.startswith(token):
-                return (value, self.line_text[len(token):])
+                return (value, self.line_text[len(token) :])
         # check if each line passed in starts with shifted or commodore special
         # character.  if so, return value of token, line with token string removed
         for (token, value) in SHIFT_CMDRE_TOKENS:
             if self.line_text.startswith(token):
-                return (value, self.line_text[len(token):])
+                return (value, self.line_text[len(token) :])
         # if tokenize flag is True (i.e. line beginning is not inside quotes or
         # after a REM statement), check if line starts with a BASIC keyword
         # if so, return value of token and line with BASIC keyword removed
         if tokenize:
             for (token, value) in TOKENS_V2:
                 if self.line_text.startswith(token):
-                    return (value, self.line_text[len(token):])
+                    return (value, self.line_text[len(token) :])
         # for characters without token values, convert to unicode (ascii) value
         # and, for latin letters, shift values by -32 to account for difference
         # between ascii and petscii used by Commodore BASIC
@@ -268,18 +270,17 @@ class TokenizedLine():
         return (char_value, self.line_text[1:])
 
 
-class Checksums():
-
+class Checksums:
     def __init__(self, line_num: int, byte_list: List[int]) -> None:
         self.line_num = line_num
         self.byte_list = byte_list
 
     def ahoy1_checksum(self) -> str:
-        '''
+        """
         Method to create Ahoy checksums from passed in byte list to match the
         codes printed in the magazine to check each line for typed in accuracy.
         Covers Ahoy Bug Repellent version for Mar-Apr 1984 issues.
-        '''
+        """
 
         next_value = 0
 
@@ -293,20 +294,20 @@ class Checksums():
 
         xor_value = next_value
         # get high nibble of xor_value
-        high_nib = (xor_value & 0xf0) >> 4
+        high_nib = (xor_value & 0xF0) >> 4
         high_char_val = high_nib + 65  # 0x41
         # get low nibble of xor_value
-        low_nib = xor_value & 0x0f
+        low_nib = xor_value & 0x0F
         low_char_val = low_nib + 65  # 0x41
         checksum = chr(high_char_val) + chr(low_char_val)
         return checksum
 
     def ahoy2_checksum(self) -> str:
-        '''
+        """
         Method to create Ahoy checksums from passed in byte list to match the
         codes printed in the magazine to check each line for typed in accuracy.
         Covers Ahoy Bug Repellent version for May 1984-Apr 1987 issues.
-        '''
+        """
 
         xor_value = 0
         char_position = 1
@@ -339,10 +340,10 @@ class Checksums():
             char_position = char_position + 1
 
         # get high nibble of xor_value
-        high_nib = (xor_value & 0xf0) >> 4
+        high_nib = (xor_value & 0xF0) >> 4
         high_char_val = high_nib + 65  # 0x41
         # get low nibble of xor_value
-        low_nib = xor_value & 0x0f
+        low_nib = xor_value & 0x0F
         low_char_val = low_nib + 65  # 0x41
         checksum = chr(high_char_val) + chr(low_char_val)
         return checksum
@@ -388,11 +389,11 @@ class Checksums():
             char_position = char_position + 1
 
         # get high nibble of xor_value
-        high_nib = (xor_value & 0xf0) >> 4
+        high_nib = (xor_value & 0xF0) >> 4
         high_char_val = high_nib + 65  # 0x41
         # high_char_val = high_char_val & 0x0f
         # get low nibble of xor_value
-        low_nib = xor_value & 0x0f
+        low_nib = xor_value & 0x0F
         low_char_val = low_nib + 65  # 0x41
         # low_char_val = low_char_val & 0x0f
         checksum = chr(high_char_val) + chr(low_char_val)
@@ -400,7 +401,6 @@ class Checksums():
 
 
 class OutputFiles:
-
     def __init__(self, bytes_out: List[int], checksums_out: List[str]) -> None:
         self.bytes_out = bytes_out
         self.checksums_out = checksums_out
@@ -412,15 +412,15 @@ class OutputFiles:
         for checksum in self.checksums_out:
             prt_line = str(checksum[0])
             prt_code = str(checksum[1])
-            output.append(f'{prt_line} {prt_code}\n')
+            output.append(f"{prt_line} {prt_code}\n")
 
-        output.append(f'\nLines: {len(self.checksums_out)}\n')
+        output.append(f"\nLines: {len(self.checksums_out)}\n")
 
-        with open(filename, 'w') as f:
+        with open(filename, "w") as f:
             for line in output:
                 f.write(line)
 
-    def write_binary(self, filename: str) -> None: 
+    def write_binary(self, filename: str) -> None:
         """Write binary file readable on Commodore computers or emulators
 
         Args:
@@ -437,7 +437,7 @@ class OutputFiles:
         try:
             with open(filename, "xb") as file:
                 for byte in self.bytes_out:
-                    file.write(byte.to_bytes(1, byteorder='big'))
+                    file.write(byte.to_bytes(1, byteorder="big"))
                 print(f'File "{filename}" written successfully.\n')
 
         except FileExistsError:
@@ -449,10 +449,12 @@ class OutputFiles:
 
     def confirm_overwrite(self, filename) -> bool:
 
-        overwrite = input(f'Output file "{filename}" already exists. '
-                          'Overwrite? (Y = yes) ')
-        return overwrite.lower() == 'y'
+        overwrite = input(
+            f'Output file "{filename}" already exists. '
+            "Overwrite? (Y = yes) "
+        )
+        return overwrite.lower() == "y"
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     print(TextListing.__dict__)

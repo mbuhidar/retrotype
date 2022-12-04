@@ -1002,4 +1002,4 @@
 .C:c0f2  A9 04       LDA #$04       - A:00 X:03 Y:01 SP:f6 ..-B..ZC 1936355171
 #1 (Trace  exec c0f4)  052 025
 .C:c0f4  4C C3 FF    JMP $FFC3      - A:04 X:03 Y:01 SP:f6 ..-B...C 1936355173
-(C:$e5d4) 
+(C:$e5d4)
