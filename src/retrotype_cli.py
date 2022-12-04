@@ -11,17 +11,11 @@ from argparse import RawTextHelpFormatter
 from os import get_terminal_size
 from typing import List
 
-from retrotype import (
-    ahoy1_checksum,
-    ahoy2_checksum,
-    ahoy3_checksum,
-    ahoy_lines_list,
-    check_line_num_seq,
-    read_file,
-    scan_manager,
-    split_line_num,
-    write_binary,
-    write_checksums,
+from retrotype.retrotype_lib import (
+    Checksums,
+    OutputFiles,
+    TextListing,
+    TokenizedLine,
 )
 
 
@@ -132,31 +126,37 @@ def command_line_runner(argv=None, width=None):
     args = parse_args(argv)
 
     # call function to read input file lines
+    tl = TextListing(args.file_in)
     try:
-        lines_list = read_file(args.file_in)
+        raw_listing = tl.read_listing()
     except IOError:
         print("File read failed - please check source file name and path.")
         sys.exit(1)
 
     # check each line to insure each starts with a line number
-    if check_line_num_seq(lines_list):
-        print(check_line_num_seq(lines_list))
+    # and that the line numbers are sequential.
+    sequence_message = tl.check_line_num_seq(raw_listing)
+    if sequence_message:
+        print(sequence_message)
         sys.exit(1)
 
-    # Create lines list while checking for loose brackets/braces and converting
-    # to common special character codes in braces
+    # Check for loose brackets/braces
+    brace_error_line_num = tl.check_for_loose_braces(raw_listing)
+    if brace_error_line_num:
+        print(
+            f"Loose brace/bracket error in line: {brace_error_line_num}\n"
+            "Special characters should be enclosed in braces/brackets.\n"
+            "Please check for unmatched single brace/bracket in above "
+            "line."
+        )
+        sys.exit(1)
+
+    # Create lines list converting to common special character codes in braces
     if args.source[0][:4] == "ahoy":
-        lines_list = ahoy_lines_list(lines_list)
-        # handle loose brace error returned from ahoy_lines_list()
-        if lines_list[0] is None:
-            line_no = split_line_num(lines_list[1])[0]
-            print(
-                f"Loose brace/bracket error in line: {line_no}\n"
-                "Special characters should be enclosed in braces/brackets.\n"
-                "Please check for unmatched single brace/bracket in above "
-                "line."
-            )
-            sys.exit(1)
+        lines_list = tl.ahoy_lines_list(raw_listing)
+    else:
+        print("Magazine format not yet supported.")
+        sys.exit(1)
 
     addr = int(args.loadaddr[0], 16)
 
@@ -165,13 +165,28 @@ def command_line_runner(argv=None, width=None):
 
     for line in lines_list:
         # split each line into line number and remaining text
-        (line_num, line_txt) = split_line_num(line)
+        (line_num, line_txt) = tl.split_line_num(line)
+
+        tkln = TokenizedLine(line_txt)
 
         token_ln = []
         # add load address at start of first line only
         if addr == int(args.loadaddr[0], 16):
             token_ln.append(addr.to_bytes(2, "little"))
-        byte_list = scan_manager(line_txt)
+        byte_list = tkln.scan_manager()
+
+        cs = Checksums(line_num, byte_list)
+
+        # call checksum generator function to build list of tuples
+        if args.source[0] == "ahoy1":
+            ahoy_checksums.append((line_num, cs.ahoy1_checksum()))
+        elif args.source[0] == "ahoy2":
+            ahoy_checksums.append((line_num, cs.ahoy2_checksum()))
+        elif args.source[0] == "ahoy3":
+            ahoy_checksums.append((line_num, cs.ahoy3_checksum()))
+        else:
+            print("Magazine format not yet supported.")
+            sys.exit(1)
 
         addr = addr + len(byte_list) + 4
 
@@ -185,40 +200,27 @@ def command_line_runner(argv=None, width=None):
 
         token_ln = [byte for sublist in token_ln for byte in sublist]
 
-        # call checksum generator function to build list of tuples
-        if args.source[0] == "ahoy1":
-            ahoy_checksums.append((line_num, ahoy1_checksum(byte_list)))
-        elif args.source[0] == "ahoy2":
-            ahoy_checksums.append((line_num, ahoy2_checksum(byte_list)))
-        elif args.source[0] == "ahoy3":
-            ahoy_checksums.append(
-                (line_num, ahoy3_checksum(line_num, byte_list))
-            )
-        else:
-            print("Magazine format not yet supported.")
-            sys.exit(1)
-
         out_list.append(token_ln)
 
     out_list.append([0, 0])
 
-    dec_list = [byte for sublist in out_list for byte in sublist]
+    bytes_out = [byte for sublist in out_list for byte in sublist]
 
     file_stem = args.file_in.split(".")[0]
-    bin_file = f"{file_stem}.prg"
+
+    ofiles = OutputFiles(bytes_out, ahoy_checksums)
 
     # Write binary file compatible with Commodore computers or emulators
-    write_binary(bin_file, dec_list)
+    ofiles.write_binary(f"{file_stem}.prg")
+
+    # Write text file containing line numbers, checksums, and line count
+    ofiles.write_checksums(f"{file_stem}.chk")
 
     # Print line checksums to terminal, formatted based on screen width
     print("Line Checksums:\n")
     if not width:
         width = get_terminal_size()[0]
     print_checksums(ahoy_checksums, width)
-
-    # Write text file containing line numbers, checksums, and line count
-    chk_file = f"{file_stem}.chk"
-    write_checksums(chk_file, ahoy_checksums)
 
 
 if __name__ == "__main__":

@@ -2,7 +2,7 @@ from io import StringIO
 
 import pytest
 
-from retrotype.retrotype_cls import (
+from retrotype.retrotype_lib import (
     Checksums,
     OutputFiles,
     TextListing,

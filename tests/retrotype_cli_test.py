@@ -95,7 +95,7 @@ def test_command_line_runner(tmp_path, capsys, source, lines_list, term):
     """
     d = tmp_path / "sub"
     d.mkdir()
-    p = d / "example.ahoy"
+    p = d / "example.bas"
     p.write_text(lines_list)
 
     term_capture = term.format(d=d)
@@ -179,7 +179,7 @@ def test_command_line_runner_interactive(
     """
     d = tmp_path / "sub"
     d.mkdir()
-    p = d / "example.ahoy"
+    p = d / "example.bas"
     p.write_text(lines_list)
     o = d / "example.prg"
     o.write_text("create the file")

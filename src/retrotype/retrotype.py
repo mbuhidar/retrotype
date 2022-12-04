@@ -1,9 +1,3 @@
-"""
-Tool for Commodore BASIC type-in programs in various magazine formats,
-checks for errors, and converts to an executable file for use with an
-emulator or on original hardware.
-"""
-
 import re
 from os import remove
 from typing import List, Optional, Tuple
@@ -17,403 +11,450 @@ from retrotype.char_maps import (
 )
 
 
-def read_file(filename: str) -> List[str]:
-    """Opens and reads magazine source, strips whitespace, and
-       returns a list of lines converted to lowercase
+class TextListing:
+    """ """
 
-    Args:
-        filename (str): The file name of the magazine source file
+    def __init__(self, filename: str) -> None:
+        self.filename = filename
 
-    Returns:
-        list: a list of strings for each non-blank line from the source file
+    def read_listing(self) -> List[str]:
+        """
+        Opens and reads magazine source, strips whitespace, and
+        returns a list of lines converted to lowercase
+
+        Args:
+            filename (str): The file name of the magazine source file
+
+        Returns:
+            list: a list of strings for each non-blank line from the source file
             converted to lowercase
-    """
+        """
 
-    with open(filename) as file:
-        lines = file.readlines()
-        lower_lines = []
-        for line in lines:
-            if not line.strip():
-                continue
-            lower_lines.append(line.rstrip().lower())
-    return lower_lines
+        with open(self.filename) as file:
+            lines = file.readlines()
+            lower_lines = []
+            for line in lines:
+                if not line.strip():
+                    continue
+                lower_lines.append(line.rstrip().lower())
+        return lower_lines
 
+    def check_line_num_seq(self, raw_listing: List[str]) -> Optional[str]:
+        """Check each line in the program that either does not start with a line
+           number or starts with an out of sequence line number.
 
-def write_binary(filename: str, int_list: List[int]) -> None:
-    """Write binary file readable on Commodore computers or emulators
+        Args:
+            lines_list (list): List of lines (str) in program.
 
-    Args:
-        filename (str): The file name of the file to write as binary
-        int_list (list): List of integers to convert to binary bytes and
-            output write to file
+        Returns:
+            string: sequence error message text or None
+        """
 
-    Returns:
-        None: Implicit return
-    """
-    print(f'Writing binary output file "{filename}"...\n')
+        line_no = (
+            0  # handles case where first line does not have a line number
+        )
+        ln_num_buffer = [
+            0
+        ]  # first popped after three line numbers are appended
+        for line in raw_listing:
+            try:
+                line_no = self.split_line_num(line)[0]
+                ln_num_buffer.append(line_no)
 
-    try:
-        with open(filename, "xb") as file:
-            for byte in int_list:
-                file.write(byte.to_bytes(1, byteorder="big"))
-            print(f'File "{filename}" written successfully.\n')
+                if not ln_num_buffer[0] < ln_num_buffer[1]:
+                    return f"Entry error after line {ln_num_buffer[0]} - lines should be in sequential order.  Exiting."
+                ln_num_buffer.pop(0)
 
-    except FileExistsError:
-        if confirm_overwrite(filename):
-            remove(filename)
-            write_binary(filename, int_list)
-        else:
-            print(f'File "{filename}" not overwritten.\n')
+            except ValueError:
+                return f"Entry error after line {line_no} - each line should start with a line number.  Exiting."
+        return None
 
+    def split_line_num(self, line: str) -> Tuple[int, str]:
+        """Split each line into line number and remaining line text
 
-def confirm_overwrite(filename: str) -> bool:
+        Args:
+            line (str): Text of each line to split
 
-    overwrite = input(
-        f'Output file "{filename}" already exists. ' "Overwrite? (Y = yes) "
-    )
-    return overwrite.lower() == "y"
+        Returns:
+            tuple consisting of:
+                line number (int): Line number split from the beginning of line
+                remaining text (str): Text for remainder of line with whitespace
+                    stripped
+        """
 
+        line = line.lstrip()
+        acc = []
+        while line and line[0].isdigit():
+            acc.append(line[0])
+            line = line[1:]
 
-def check_line_num_seq(lines_list: List[str]) -> Optional[str]:
-    """Check each line in the program that either does not start with a line
-       number or starts with an out of sequence line number.
+        return (int("".join(acc)), line.lstrip())
 
-    Args:
-        lines_list (list): List of lines (str) in program.
+    def check_for_loose_braces(self, listing: List[str]) -> Optional[str]:
+        """Check each line for loose brackets/braces
 
-    Returns:
-        string: sequence error message text or None
-    """
+        Args:
+            listing (list): List of lines (str) in program.
 
-    line_no = 0  # handles case where first line does not have a line number
-    ln_num_buffer = [0]  # first popped after three line numbers are appended
-    for line in lines_list:
-        try:
-            line_no = split_line_num(line)[0]
-            ln_num_buffer.append(line_no)
+        Returns:
+            Brace error: line number (str)
+            No error: None
+        """
 
-            if not ln_num_buffer[0] < ln_num_buffer[1]:
-                return f"Entry error after line {ln_num_buffer[0]} - lines should be in sequential order.  Exiting."
-            ln_num_buffer.pop(0)
+        for line in listing:
+            # replace brackets with braces since both were used
+            line = line.replace("[", "{")
+            line = line.replace("]", "}")
 
-        except ValueError:
-            return f"Entry error after line {line_no} - each line should start with a line number.  Exiting."
-    return None
+            # split each line on special characters
+            str_split = re.split(r"{\d+\s?\".[^{]*?\"}|{.[^{]*?}", line)
 
+            # check for loose braces in each substring, return error indication
+            for sub_str in str_split:
+                loose_brace = re.search(r"\}|{", sub_str)
+                if loose_brace is not None:
+                    return str(self.split_line_num(line)[0])
 
-def ahoy_lines_list(lines_list):
-    """For each line in the program, convert Ahoy special characters to Petcat
-       special characters.
+        return None
 
-    Args:
-        lines_list (list): List of lines (str) in program.
+    def ahoy_lines_list(self, lines_list: List[str]) -> List[str]:
+        """For each line in the program, convert Ahoy special characters to Petcat
+           special characters.
 
-    Returns:
-        new_lines (list): List of new lines (str) after special characters are
-                            converted from Ahoy to petcat format.
-    """
+        Args:
+            lines_list (list): List of lines (str) in program.
 
-    new_lines = []
+        Returns:
+            new_lines (list): List of new lines (str) after special characters are
+                                converted from Ahoy to petcat format.
+        """
 
-    for line in lines_list:
-        # replace brackets with braces since Ahoy used both over time
-        line = line.replace("[", "{")
-        line = line.replace("]", "}")
+        new_lines = []
 
-        # split each line on ahoy special characters
-        str_split = re.split(r"{\d+\s?\".[^{]*?\"}|{.[^{]*?}", line)
+        for line in lines_list:
+            # replace brackets with braces since Ahoy used both over time
+            line = line.replace("[", "{")
+            line = line.replace("]", "}")
 
-        # check for loose braces in each substring, return error indication
-        for sub_str in str_split:
-            loose_brace = re.search(r"\}|{", sub_str)
-            # Improve loose brace error handling, inconsistent return
-            if loose_brace is not None:
-                return (None, line)
+            # split each line on ahoy special characters
+            str_split = re.split(r"{\d+\s?\".[^{]*?\"}|{.[^{]*?}", line)
 
-        # create list of ahoy special character code strings
-        code_split = re.findall(r"{\d+\s?\".+?\"}|{.+?}", line)
+            # create list of ahoy special character code strings
+            code_split = re.findall(r"{\d+\s?\".+?\"}|{.+?}", line)
 
-        new_codes = []
+            new_codes = []
 
-        # for each ahoy special character, append the petcat equivalent
-        num = 0
+            # for each ahoy special character, append the petcat equivalent
+            num = 0
 
-        for item in code_split:
+            for item in code_split:
 
-            if item.upper() in AHOY_TO_PETCAT:
-                new_codes.append(AHOY_TO_PETCAT[item.upper()])
+                if item.upper() in AHOY_TO_PETCAT:
+                    new_codes.append(AHOY_TO_PETCAT[item.upper()])
 
-            elif re.match(r"{\d+\s?\".+?\"}", item):
-                # Extract number of times to repeat special character
-                char_count = int(re.search(r"\d+\b", item).group())
-                # Get the string inside the brackets and strip quotes on ends
-                char_code = re.search(r"\".+?\"", item).group()[1:-1]
+                elif re.match(r"{\d+\s?\".+?\"}", item):
+                    # Extract number of times to repeat special character
+                    char_count = int(re.search(r"\d+\b", item).group())  # type: ignore
+                    # Get the string inside the brackets and strip quotes
+                    char_code = re.search(r"\".+?\"", item).group()[1:-1]  # type: ignore
 
-                if char_code.upper() in AHOY_TO_PETCAT:
-                    new_codes.append(AHOY_TO_PETCAT[char_code.upper()])
-
-                    while char_count > 1:
+                    if char_code.upper() in AHOY_TO_PETCAT:
                         new_codes.append(AHOY_TO_PETCAT[char_code.upper()])
-                        str_split.insert(num + 1, "")
-                        num += 1
-                        char_count -= 1
+
+                        while char_count > 1:
+                            new_codes.append(AHOY_TO_PETCAT[char_code.upper()])
+                            str_split.insert(num + 1, "")
+                            num += 1
+                            char_count -= 1
+
+                    else:
+                        new_codes.append(char_code)
+                        while char_count > 1:
+                            new_codes.append(char_code)
+                            str_split.insert(num + 1, "")
+                            num += 1
+                            char_count -= 1
 
                 else:
-                    new_codes.append(char_code)
-                    while char_count > 1:
-                        new_codes.append(char_code)
-                        str_split.insert(num + 1, "")
-                        num += 1
-                        char_count -= 1
+                    new_codes.append(item)
+                num += 1
 
+            # add blank item to list of special characters prior to blending
+            if new_codes:
+                new_codes.append("")
+
+                new_line: List[str] = []
+
+                # piece the string segments and petcat codes back together
+                for count in range(len(new_codes)):
+                    new_line.extend((str_split[count], new_codes[count]))
+
+            # handle case where line contained no special characters
             else:
-                new_codes.append(item)
-            num += 1
+                new_line = str_split
+            new_lines.append("".join(new_line))
 
-        # add blank item to list of special characters prior to blending strs
-        if new_codes:
-            new_codes.append("")
-
-            new_line = []
-
-            # piece the string segments and petcat codes back together
-            for count in range(len(new_codes)):
-                new_line.extend((str_split[count], new_codes[count]))
-
-        # handle case where line contained no special characters
-        else:
-            new_line = str_split
-        new_lines.append("".join(new_line))
-
-    return new_lines
+        return new_lines
 
 
-def split_line_num(line: str) -> Tuple[int, str]:
-    """Split each line into line number and remaining line text
+class TokenizedLine:
+    """ """
 
-    Args:
-        line (str): Text of each line to split
+    def __init__(self, line_text: str) -> None:
+        self.line_text = line_text
 
-    Returns:
-        tuple consisting of:
-            line number (int): Line number split from the beginning of line
-            remaining text (str): Text for remainder of line with whitespace
-                stripped
-    """
+    # manage the tokenization process for each line text string
+    def scan_manager(self) -> List[int]:
+        in_quotes = False
+        in_remark = False
+        byte_list = []
 
-    line = line.lstrip()
-    acc = []
-    while line and line[0].isdigit():
-        acc.append(line[0])
-        line = line[1:]
+        while self.line_text:
+            (byte, self.line_text) = self._scan(
+                tokenize=not (in_quotes or in_remark)
+            )
+            # if byte is not None:
+            byte_list.append(byte)
+            if byte == ord('"'):
+                in_quotes = not in_quotes
+            if byte == 143:
+                in_remark = True
+        byte_list.append(0)
+        return byte_list
 
-    return (int("".join(acc)), line.lstrip())
+    # scan each line segement and convert to tokenized bytes.
+    # returns byte and remaining line segment
+    def _scan(self, tokenize: bool = True) -> Tuple[int, str]:
+        """Scan beginning of each line for BASIC keywords, petcat special
+           characters, or ascii characters, convert to tokenized bytes, and
+           return remaining line segment after converted characters are removed
 
+        Args:
+            ln (str): Text of each line segment to parse and convert
+            tokenize (bool): Flag to indicate if start of line segment should be
+                tokenized (False if line segment start is within quotes or after
+                a REM statement)
 
-# manage the tokenization process for each line text string
-def scan_manager(ln: str) -> List[int]:
-    in_quotes = False
-    in_remark = False
-    bytestr = []
+        Returns:
+            tuple consisting of:
+                character/token value (int): Decimal value of ascii character or
+                    tokenized word
+                remainder of line (str): Text for remainder of line with keyword,
+                    specical character, or alphanumeric character stripped
+        """
 
-    while ln:
-        (byte, ln) = _scan(ln, tokenize=not (in_quotes or in_remark))
-        # if byte is not None:
-        bytestr.append(byte)
-        if byte == ord('"'):
-            in_quotes = not in_quotes
-        if byte == 143:
-            in_remark = True
-    bytestr.append(0)
-    return bytestr
-
-
-# scan each line segement and convert to tokenized bytes.
-# returns byte and remaining line segment
-def _scan(ln: str, tokenize: bool = True) -> Tuple[int, str]:
-    """Scan beginning of each line for BASIC keywords, petcat special
-       characters, or ascii characters, convert to tokenized bytes, and
-       return remaining line segment after converted characters are removed
-
-    Args:
-        ln (str): Text of each line segment to parse and convert
-        tokenize (bool): Flag to indicate if start of line segment should be
-            tokenized (False if line segment start is within quotes or after
-            a REM statement)
-
-    Returns:
-        tuple consisting of:
-            character/token value (int): Decimal value of ascii character or
-                tokenized word
-            remainder of line (str): Text for remainder of line with keyword,
-                specical character, or alphanumeric character stripped
-    """
-
-    # check if each line passed in starts with a petcat special character
-    # if so, return value of token and line with token string removed
-    for (token, value) in PETCAT_TOKENS:
-        if ln.startswith(token):
-            return (value, ln[len(token) :])
-    # check if each line passed in starts with shifted or commodore special
-    # character.  if so, return value of token, line with token string removed
-    for (token, value) in SHIFT_CMDRE_TOKENS:
-        if ln.startswith(token):
-            return (value, ln[len(token) :])
-    # if tokenize flag is True (i.e. line beginning is not inside quotes or
-    # after a REM statement), check if line starts with a BASIC keyword
-    # if so, return value of token and line with BASIC keyword removed
-    if tokenize:
-        for (token, value) in TOKENS_V2:
-            if ln.startswith(token):
-                return (value, ln[len(token) :])
-    # for characters without token values, convert to unicode (ascii) value
-    # and, for latin letters, shift values by -32 to account for difference
-    # between ascii and petscii used by Commodore BASIC
-    # finally, return character value and line with character removed
-    char_val = ord(ln[0])
-    if char_val >= 97 and char_val <= 122:
-        char_val -= 32
-    return (char_val, ln[1:])
+        # check if each line passed in starts with a petcat special character
+        # if so, return value of token and line with token string removed
+        for (token, value) in PETCAT_TOKENS:
+            if self.line_text.startswith(token):
+                return (value, self.line_text[len(token) :])
+        # check if each line passed in starts with shifted or commodore special
+        # character.  if so, return value of token, line with token string removed
+        for (token, value) in SHIFT_CMDRE_TOKENS:
+            if self.line_text.startswith(token):
+                return (value, self.line_text[len(token) :])
+        # if tokenize flag is True (i.e. line beginning is not inside quotes or
+        # after a REM statement), check if line starts with a BASIC keyword
+        # if so, return value of token and line with BASIC keyword removed
+        if tokenize:
+            for (token, value) in TOKENS_V2:
+                if self.line_text.startswith(token):
+                    return (value, self.line_text[len(token) :])
+        # for characters without token values, convert to unicode (ascii) value
+        # and, for latin letters, shift values by -32 to account for difference
+        # between ascii and petscii used by Commodore BASIC
+        # finally, return character value and line with character removed
+        char_value = ord(self.line_text[0])
+        if char_value >= 97 and char_value <= 122:
+            char_value -= 32
+        return (char_value, self.line_text[1:])
 
 
-def ahoy1_checksum(byte_list: List[int]) -> str:
-    """
-    Function to create Ahoy checksums from passed in byte list to match the
-    codes printed in the magazine to check each line for typed in accuracy.
-    Covers Ahoy Bug Repellent version for Mar-Apr 1984 issues.
-    """
+class Checksums:
+    def __init__(self, line_num: int, byte_list: List[int]) -> None:
+        self.line_num = line_num
+        self.byte_list = byte_list
 
-    next_value = 0
+    def ahoy1_checksum(self) -> str:
+        """
+        Method to create Ahoy checksums from passed in byte list to match the
+        codes printed in the magazine to check each line for typed in accuracy.
+        Covers Ahoy Bug Repellent version for Mar-Apr 1984 issues.
+        """
 
-    for char_val in byte_list:
-        # Detect spaces that are outside of quotes and ignore them, else
-        # execute primary checksum generation algorithm
-        if char_val == 32:
-            continue
-        next_value = char_val + next_value
-        next_value = next_value << 1
+        next_value = 0
 
-    xor_value = next_value
-    # get high nibble of xor_value
-    high_nib = (xor_value & 0xF0) >> 4
-    high_char_val = high_nib + 65  # 0x41
-    # get low nibble of xor_value
-    low_nib = xor_value & 0x0F
-    low_char_val = low_nib + 65  # 0x41
-    checksum = chr(high_char_val) + chr(low_char_val)
-    return checksum
+        for char_val in self.byte_list:
+            # Detect spaces that are outside of quotes and ignore them, else
+            # execute primary checksum generation algorithm
+            if char_val == 32:
+                continue
+            next_value = char_val + next_value
+            next_value = next_value << 1
+
+        xor_value = next_value
+        # get high nibble of xor_value
+        high_nib = (xor_value & 0xF0) >> 4
+        high_char_val = high_nib + 65  # 0x41
+        # get low nibble of xor_value
+        low_nib = xor_value & 0x0F
+        low_char_val = low_nib + 65  # 0x41
+        checksum = chr(high_char_val) + chr(low_char_val)
+        return checksum
+
+    def ahoy2_checksum(self) -> str:
+        """
+        Method to create Ahoy checksums from passed in byte list to match the
+        codes printed in the magazine to check each line for typed in accuracy.
+        Covers Ahoy Bug Repellent version for May 1984-Apr 1987 issues.
+        """
+
+        xor_value = 0
+        char_position = 1
+        carry_flag = 1
+        in_quotes = False
+
+        for char_val in self.byte_list:
+
+            # set carry flag to zero for char values less than ascii value for
+            # quote character since assembly code for repellent sets carry flag
+            # based on cmp 0x22 (decimal 34)
+
+            carry_flag = 0 if char_val < 34 else 1
+
+            # Detect quote symbol in line and toggle in-quotes flag
+            if char_val == 34:
+                in_quotes = not in_quotes
+
+            # Detect spaces that are outside of quotes and ignore them, else
+            # execute primary checksum generation algorithm
+            if char_val == 32 and in_quotes is False:
+                continue
+
+            next_value = char_val + xor_value + carry_flag
+            xor_value = next_value ^ char_position
+
+            # limit next value to fit in one byte
+            next_value = next_value & 255
+
+            char_position = char_position + 1
+
+        # get high nibble of xor_value
+        high_nib = (xor_value & 0xF0) >> 4
+        high_char_val = high_nib + 65  # 0x41
+        # get low nibble of xor_value
+        low_nib = xor_value & 0x0F
+        low_char_val = low_nib + 65  # 0x41
+        checksum = chr(high_char_val) + chr(low_char_val)
+        return checksum
+
+    def ahoy3_checksum(self) -> str:
+        """
+        Method to create Ahoy checksums from passed in line number and
+        byte list to match the codes printed in the magazine to check each
+        line for typed in accuracy. Covers the last Ahoy Bug Repellent
+        version introduced in May 1987.
+        """
+
+        xor_value = 0
+        char_position = 0
+        in_quotes = False
+
+        line_low = self.line_num % 256
+        line_hi = int(self.line_num / 256)
+
+        byte_line = [line_low] + [line_hi] + self.byte_list
+
+        # byte_list.insert(0, line_hi)
+        # byte_list.insert(0, line_low)
+
+        for char_val in byte_line:
+
+            # Detect quote symbol in line and toggle in-quotes flag
+            if char_val == 34:
+                in_quotes = not in_quotes
+
+            # Detect spaces that are outside of quotes and ignore them, else
+            # execute primary checksum generation algorithm
+            if char_val == 32 and in_quotes is False:
+                continue
+
+            next_value = char_val + xor_value
+
+            xor_value = next_value ^ char_position
+
+            # limit next value to fit in one byte
+            next_value = next_value & 255
+
+            char_position = char_position + 1
+
+        # get high nibble of xor_value
+        high_nib = (xor_value & 0xF0) >> 4
+        high_char_val = high_nib + 65  # 0x41
+        # high_char_val = high_char_val & 0x0f
+        # get low nibble of xor_value
+        low_nib = xor_value & 0x0F
+        low_char_val = low_nib + 65  # 0x41
+        # low_char_val = low_char_val & 0x0f
+        checksum = chr(high_char_val) + chr(low_char_val)
+        return checksum
 
 
-def ahoy2_checksum(byte_list: List[int]) -> str:
-    """
-    Function to create Ahoy checksums from passed in byte list to match the
-    codes printed in the magazine to check each line for typed in accuracy.
-    Covers Ahoy Bug Repellent version for May 1984-Apr 1987 issues.
-    """
+class OutputFiles:
+    def __init__(self, bytes_out: List[int], checksums_out: List[str]) -> None:
+        self.bytes_out = bytes_out
+        self.checksums_out = checksums_out
 
-    xor_value = 0
-    char_position = 1
-    carry_flag = 1
-    in_quotes = False
+    def write_checksums(self, filename: str) -> None:
+        output = []
 
-    for char_val in byte_list:
+        # Print each line number, code combination in matrix format
+        for checksum in self.checksums_out:
+            prt_line = str(checksum[0])
+            prt_code = str(checksum[1])
+            output.append(f"{prt_line} {prt_code}\n")
 
-        # set carry flag to zero for char values less than ascii value for
-        # quote character since assembly code for repellent sets carry flag
-        # based on cmp 0x22 (decimal 34)
+        output.append(f"\nLines: {len(self.checksums_out)}\n")
 
-        carry_flag = 0 if char_val < 34 else 1
+        with open(filename, "w") as f:
+            for line in output:
+                f.write(line)
 
-        # Detect quote symbol in line and toggle in-quotes flag
-        if char_val == 34:
-            in_quotes = not in_quotes
+    def write_binary(self, filename: str) -> None:
+        """Write binary file readable on Commodore computers or emulators
 
-        # Detect spaces that are outside of quotes and ignore them, else
-        # execute primary checksum generation algorithm
-        if char_val == 32 and in_quotes is False:
-            continue
+        Args:
+            filename (str): The file name of the file to write as binary
+            int_list (list): List of integers to convert to binary bytes and
+                output write to file
 
-        next_value = char_val + xor_value + carry_flag
-        xor_value = next_value ^ char_position
+        Returns:
+            None: Implicit return
+        """
 
-        # limit next value to fit in one byte
-        next_value = next_value & 255
+        print(f'Writing binary output file "{filename}"...\n')
 
-        char_position = char_position + 1
+        try:
+            with open(filename, "xb") as file:
+                for byte in self.bytes_out:
+                    file.write(byte.to_bytes(1, byteorder="big"))
+                print(f'File "{filename}" written successfully.\n')
 
-    # get high nibble of xor_value
-    high_nib = (xor_value & 0xF0) >> 4
-    high_char_val = high_nib + 65  # 0x41
-    # get low nibble of xor_value
-    low_nib = xor_value & 0x0F
-    low_char_val = low_nib + 65  # 0x41
-    checksum = chr(high_char_val) + chr(low_char_val)
-    return checksum
+        except FileExistsError:
+            if self.confirm_overwrite(filename):
+                remove(filename)
+                self.write_binary(filename)
+            else:
+                print(f'File "{filename}" not overwritten.\n')
 
+    def confirm_overwrite(self, filename) -> bool:
 
-def ahoy3_checksum(line_num: int, byte_list: List[int]) -> str:
-    """
-    Function to create Ahoy checksums from passed in line number and
-    byte list to match the codes printed in the magazine to check each
-    line for typed in accuracy. Covers the last Ahoy Bug Repellent
-    version introduced in May 1987.
-    """
-
-    xor_value = 0
-    char_position = 0
-    in_quotes = False
-
-    line_low = line_num % 256
-    line_hi = int(line_num / 256)
-
-    byte_list = [line_low] + [line_hi] + byte_list
-
-    # byte_list.insert(0, line_hi)
-    # byte_list.insert(0, line_low)
-
-    for char_val in byte_list:
-
-        # Detect quote symbol in line and toggle in-quotes flag
-        if char_val == 34:
-            in_quotes = not in_quotes
-
-        # Detect spaces that are outside of quotes and ignore them, else
-        # execute primary checksum generation algorithm
-        if char_val == 32 and in_quotes is False:
-            continue
-
-        next_value = char_val + xor_value
-
-        xor_value = next_value ^ char_position
-
-        # limit next value to fit in one byte
-        next_value = next_value & 255
-
-        char_position = char_position + 1
-
-    # get high nibble of xor_value
-    high_nib = (xor_value & 0xF0) >> 4
-    high_char_val = high_nib + 65  # 0x41
-    # high_char_val = high_char_val & 0x0f
-    # get low nibble of xor_value
-    low_nib = xor_value & 0x0F
-    low_char_val = low_nib + 65  # 0x41
-    # low_char_val = low_char_val & 0x0f
-    checksum = chr(high_char_val) + chr(low_char_val)
-    return checksum
+        overwrite = input(
+            f'Output file "{filename}" already exists. '
+            "Overwrite? (Y = yes) "
+        )
+        return overwrite.lower() == "y"
 
 
-def write_checksums(filename: str, ahoy_checksums: List[str]) -> None:
-
-    output = []
-    # Print each line number, code combination in matrix format
-    for checksum in ahoy_checksums:
-        prt_line = str(checksum[0])
-        prt_code = str(checksum[1])
-        output.append(f"{prt_line} {prt_code}\n")
-
-    output.append(f"\nLines: {len(ahoy_checksums)}\n")
-
-    with open(filename, "w") as f:
-        for line in output:
-            f.write(line)
+if __name__ == "__main__":
+    print(TextListing.__dict__)
