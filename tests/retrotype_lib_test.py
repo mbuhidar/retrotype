@@ -173,7 +173,8 @@ def test_check_for_loose_braces(lines_list, brace_error_line_num):
         (["30 {PU}{CL}{YL}{CY}{SS}"], ["30 {pur}{left}{yel}{cyn}{sspc}"]),
         (
             [
-                "10 [CLEAR][INSERT][BROWN][LTRED][GRAY1][GRAY2][LTGREEN][LTBLUE]"
+                "10 [CLEAR][INSERT][BROWN][LTRED][GRAY1][GRAY2][LTGREEN]"
+                "[LTBLUE]"
             ],
             ["10 {clr}{inst}{brn}{lred}{gry1}{gry2}{lgrn}{lblu}"],
         ),
@@ -188,13 +189,15 @@ def test_check_for_loose_braces(lines_list, brace_error_line_num):
         (
             ['80 print"{4"{cd}"}{cy}";:printtab(8)"press trigger"'],
             [
-                '80 print"{down}{down}{down}{down}{cyn}";:printtab(8)"press trigger"'
+                '80 print"{down}{down}{down}{down}{cyn}";:printtab(8)'
+                '"press trigger"'
             ],
         ),
         (
             ['12 print"[4"[cd]"][cy]";:printtab(8)"press trigger"'],
             [
-                '12 print"{down}{down}{down}{down}{cyn}";:printtab(8)"press trigger"'
+                '12 print"{down}{down}{down}{down}{cyn}";:printtab(8)'
+                '"press trigger"'
             ],
         ),
         (
@@ -207,6 +210,7 @@ def test_check_for_loose_braces(lines_list, brace_error_line_num):
             ['12 print"    {cyn}";:printtab(8)"press trigger"'],
         ),
         (['20 print"[4 "*"][5 "4"][BR]"'], ['20 print"****44444{brn}"']),
+        (["20 data1, 2, 3, 4"], ["20 data1, 2, 3, 4"]),
     ],
 )
 def test_ahoy_lines_list(lines_list, new_lines):
@@ -438,6 +442,8 @@ def test_ahoy2_checksum(byte_list, checksum):
             ],
             "LE",
         ),
+        # '20 GOSUB 325'
+        (20, [141, 32, 51, 50, 53, 0], "DI"),
     ],
 )
 def test_ahoy3_checksum(line_num, byte_list, checksum):

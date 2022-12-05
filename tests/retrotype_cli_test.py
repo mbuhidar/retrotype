@@ -69,21 +69,24 @@ def test_print_checksums(capsys, ahoy_checksums, term_width, term_capture):
             "ahoy1",
             '10 PRINT"HELLO"\n20 GOTO10',
             'Writing binary output file "{d}/example.prg"...\n\nFile '
-            '"{d}/example.prg" written successfully.\n\nLine Checksums:\n\n    '
+            '"{d}/example.prg" written successfully.\n\nLine '
+            "Checksums:\n\n    "
             "10 IA       20 NI   \n\nLines: 2\n\n",
         ),
         (
             "ahoy2",
             '10 PRINT"HELLO"\n20 GOTO10',
             'Writing binary output file "{d}/example.prg"...\n\nFile '
-            '"{d}/example.prg" written successfully.\n\nLine Checksums:\n\n    '
+            '"{d}/example.prg" written successfully.\n\nLine '
+            "Checksums:\n\n    "
             "10 EO       20 PH   \n\nLines: 2\n\n",
         ),
         (
             "ahoy3",
             '10 PRINT"HELLO"\n20 GOTO10',
             'Writing binary output file "{d}/example.prg"...\n\nFile '
-            '"{d}/example.prg" written successfully.\n\nLine Checksums:\n\n    '
+            '"{d}/example.prg" written successfully.\n\nLine '
+            "Checksums:\n\n    "
             "10 GC       20 PP   \n\nLines: 2\n\n",
         ),
     ],
@@ -116,9 +119,11 @@ def test_command_line_runner(tmp_path, capsys, source, lines_list, term):
             "ahoy1",
             '10 PRINT"HELLO"\n20 GOTO10',
             'Writing binary output file "{d}/example.prg"...\n\n'
-            'Output file "{d}/example.prg" already exists. Overwrite? (Y = yes) '
+            'Output file "{d}/example.prg" already exists. '
+            "Overwrite? (Y = yes) "
             'Writing binary output file "{d}/example.prg"...\n\n'
-            'File "{d}/example.prg" written successfully.\n\nLine Checksums:\n\n'
+            'File "{d}/example.prg" written successfully.\n\nLine '
+            "Checksums:\n\n"
             "    10 IA       20 NI   \n\nLines: 2\n\n",
         ),
         (
@@ -126,9 +131,11 @@ def test_command_line_runner(tmp_path, capsys, source, lines_list, term):
             "ahoy2",
             '10 PRINT"HELLO"\n20 GOTO10',
             'Writing binary output file "{d}/example.prg"...\n\n'
-            'Output file "{d}/example.prg" already exists. Overwrite? (Y = yes) '
+            'Output file "{d}/example.prg" already exists. '
+            "Overwrite? (Y = yes) "
             'Writing binary output file "{d}/example.prg"...\n\n'
-            'File "{d}/example.prg" written successfully.\n\nLine Checksums:\n\n'
+            'File "{d}/example.prg" written successfully.\n\nLine '
+            "Checksums:\n\n"
             "    10 EO       20 PH   \n\nLines: 2\n\n",
         ),
         (
@@ -136,9 +143,11 @@ def test_command_line_runner(tmp_path, capsys, source, lines_list, term):
             "ahoy3",
             '10 PRINT"HELLO"\n20 GOTO10',
             'Writing binary output file "{d}/example.prg"...\n\n'
-            'Output file "{d}/example.prg" already exists. Overwrite? (Y = yes) '
+            'Output file "{d}/example.prg" already exists. '
+            "Overwrite? (Y = yes) "
             'Writing binary output file "{d}/example.prg"...\n\n'
-            'File "{d}/example.prg" written successfully.\n\nLine Checksums:\n\n'
+            'File "{d}/example.prg" written successfully.\n\nLine '
+            "Checksums:\n\n"
             "    10 GC       20 PP   \n\nLines: 2\n\n",
         ),
         (
@@ -146,8 +155,10 @@ def test_command_line_runner(tmp_path, capsys, source, lines_list, term):
             "ahoy1",
             '10 PRINT"HELLO"\n20 GOTO10',
             'Writing binary output file "{d}/example.prg"...\n\n'
-            'Output file "{d}/example.prg" already exists. Overwrite? (Y = yes) '
-            'File "{d}/example.prg" not overwritten.\n\nLine Checksums:\n\n'
+            'Output file "{d}/example.prg" already exists. '
+            "Overwrite? (Y = yes) "
+            'File "{d}/example.prg" not overwritten.\n\nLine '
+            "Checksums:\n\n"
             "    10 IA       20 NI   \n\nLines: 2\n\n",
         ),
         (
@@ -155,7 +166,8 @@ def test_command_line_runner(tmp_path, capsys, source, lines_list, term):
             "ahoy2",
             '10 PRINT"HELLO"\n20 GOTO10',
             'Writing binary output file "{d}/example.prg"...\n\n'
-            'Output file "{d}/example.prg" already exists. Overwrite? (Y = yes) '
+            'Output file "{d}/example.prg" already exists. '
+            "Overwrite? (Y = yes) "
             'File "{d}/example.prg" not overwritten.\n\nLine Checksums:\n\n'
             "    10 EO       20 PH   \n\nLines: 2\n\n",
         ),
@@ -164,7 +176,8 @@ def test_command_line_runner(tmp_path, capsys, source, lines_list, term):
             "ahoy3",
             '10 PRINT"HELLO"\n20 GOTO10',
             'Writing binary output file "{d}/example.prg"...\n\n'
-            'Output file "{d}/example.prg" already exists. Overwrite? (Y = yes) '
+            'Output file "{d}/example.prg" already exists. '
+            "Overwrite? (Y = yes) "
             'File "{d}/example.prg" not overwritten.\n\nLine Checksums:\n\n'
             "    10 GC       20 PP   \n\nLines: 2\n\n",
         ),

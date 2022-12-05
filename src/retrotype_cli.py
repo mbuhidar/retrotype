@@ -24,11 +24,11 @@ def parse_args(argv):
     documentation.
     """
     parser = argparse.ArgumentParser(
-        description="A tokenizer for Commodore BASIC typein programs. Supports Ahoy "
-        "magazine\nprograms for C64.",
+        description="A tokenizer for Commodore BASIC typein programs. Supports"
+        "Ahoy magazine\nprograms for C64.",
         formatter_class=RawTextHelpFormatter,
-        epilog="Notes for entering programs from Ahoy issues prior to November "
-        "1984:\n\n"
+        epilog="Notes for entering programs from Ahoy issues prior to "
+        "November 1984:\n\n"
         "In addition to the special character codes contained in braces \n"
         "in the magazine, Ahoy also used a shorthand convention for \n"
         "specifying a key entry preceeded by either the Shift key or the \n"
@@ -135,14 +135,12 @@ def command_line_runner(argv=None, width=None):
 
     # check each line to insure each starts with a line number
     # and that the line numbers are sequential.
-    sequence_message = tl.check_line_num_seq(raw_listing)
-    if sequence_message:
+    if sequence_message := tl.check_line_num_seq(raw_listing):
         print(sequence_message)
         sys.exit(1)
 
     # Check for loose brackets/braces
-    brace_error_line_num = tl.check_for_loose_braces(raw_listing)
-    if brace_error_line_num:
+    if brace_error_line_num := tl.check_for_loose_braces(raw_listing):
         print(
             f"Loose brace/bracket error in line: {brace_error_line_num}\n"
             "Special characters should be enclosed in braces/brackets.\n"
@@ -224,4 +222,4 @@ def command_line_runner(argv=None, width=None):
 
 
 if __name__ == "__main__":
-    sys.exit(command_line_runner())
+    sys.exit(command_line_runner())  # pragma: no cover

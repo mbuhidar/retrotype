@@ -3,7 +3,7 @@
 Tools for typing-in, debugging, and converting 1980s magazine type-in games and
 programs for use with Commodore emulators and original hardware.
 
-## Installation (requires Python 3.6 or later)
+## Installation (requires Python 3.8 or later)
 
 `pip3 install retrotype --upgrade`
 
