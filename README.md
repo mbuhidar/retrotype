@@ -1,8 +1,10 @@
 # retrotype
-Tools for typing-in, debugging, and converting 1980s magazine type-in games and 
-programs for use with Commodore emulators and original hardware. 
 
-## Installation (requires Python 3.6 or later)
+Tools for typing-in, debugging, and converting 1980s magazine type-in games and
+programs for use with Commodore emulators and original hardware.
+
+## Installation (requires Python 3.8 or later)
+
 `pip3 install retrotype --upgrade`
 
 ## Tool: retrotype_cli
@@ -20,10 +22,10 @@ hardware.
 
 ### Usage
 
-After installation, use `retrotype_cli` directly from the command line - 
-consult the help for the latest usage: 
+After installation, use `retrotype_cli` directly from the command line -
+consult the help for the latest usage:
 
-**Note:** Currently the only implemented options are for Ahoy C64 programs. 
+**Note:** Currently the only implemented options are for Ahoy C64 programs.
 
 ```
 retrotype_cli [-l load_address] [-s source_format] input_file
@@ -67,9 +69,9 @@ Outputs:  basename.prg (tokenized file that can be run on a Commodore computer
 
 ### Notes for entering programs from Ahoy issues prior to November 1984:
 
-In addition to the special character codes contained in braces 
-in the magazine, Ahoy also used a shorthand convention for 
-specifying a key entry preceeded by either the Shift key or the 
+In addition to the special character codes contained in braces
+in the magazine, Ahoy also used a shorthand convention for
+specifying a key entry preceeded by either the Shift key or the
 Commodore key as follows:
 
     Underlined characters - preceed entry with Shift key
@@ -93,10 +95,10 @@ Those should be entered as follows:
     {c EP} - Commodore-Bristish Pound symbol
     {s UP_ARROW} - shifted up arrow symbol
 
-After the October 1984 issue, the over/under score representation was 
-discontinued as was the use of braces as delineators.  After October 1984, the
+After the October 1984 issue, the over/under score representation was
+discontinued as was the use of braces as delineators. After October 1984, the
 braces were replaced by brackets, however, either can be used while typing in
-the programs for any issue.  The special characters can be typed as listed
+the programs for any issue. The special characters can be typed as listed
 in the magazines after that issue.
 
 ### Using the output files
