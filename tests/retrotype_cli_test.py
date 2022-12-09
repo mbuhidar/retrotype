@@ -2,7 +2,11 @@ from io import StringIO
 
 import pytest
 
-from retrotype_cli import command_line_runner, parse_args, print_checksums
+from retrotype.retrotype_cli import (
+    command_line_runner,
+    parse_args,
+    print_checksums,
+)
 
 
 @pytest.mark.parametrize(

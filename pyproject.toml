@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "retrotype"
-version = "0.0.7"
+version = "0.0.8"
 description = "Debuging and conversion tool for 1980s magazine type-in programs"
 readme = "README.md"
 authors = [{ name = "Michael Buhidar", email = "mbuhidar@gmail.com" }]
@@ -30,7 +30,7 @@ test = ["pytest", "coverage",]
 
 [tool.setuptools.packages.find]
 where = ["src"]  # list of folders that contain the packages (["."] by default)
-include = ["."]  # ["."] by default
+include = ["retrotype"]  # ["."] by default
 exclude = ["tests"]  # empty by default
 namespaces = true  # true by default
 
@@ -39,4 +39,4 @@ Homepage = "https://github.com/mbuhidar/retrotype"
 
 # CLI scripts
 [project.scripts]
-retrotype_cli = "retrotype_cli:command_line_runner"
+retrotype_cli = "retrotype.retrotype_cli:command_line_runner"
