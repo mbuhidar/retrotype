@@ -10,13 +10,13 @@ Lc00b               ldy #$00
 Lc013               lda ($fb),y
                     bne Lc01a
                     jmp Lc08a
-                    
+
 Lc01a               inc $fb
                     bne Lc020
                     inc $fc
 Lc020               jmp Lc02b
-                    
-                    4c 49 4e 45 20 23 20 00 
+
+                    4c 49 4e 45 20 23 20 00
 Lc02b               lda #$23
                     ldy #$c0
                     jsr bSTROUT
@@ -38,7 +38,7 @@ Lc04b               inc $fb
 Lc051               lda $fd
                     ldy #$00
                     jmp Lc110
-                    
+
 Lc058               sta $fd
                     lda ($fb),y
                     bne Lc04b
@@ -65,15 +65,15 @@ Lc081               inc $fb
                     bne Lc087
                     inc $fc
 Lc087               jmp Lc00b
-                    
+
 Lc08a               lda #$99
                     ldy #$c0
                     jsr bSTROUT
                     ldx $3f
                     lda $40
                     jmp Lc0e7
-                    
-                    60 4c 49 4e 45 53 3a 20 00 
+
+                    60 4c 49 4e 45 53 3a 20 00
 Sc0a1               lda #$f7
                     ldy #$c0
                     jsr bSTROUT
@@ -100,22 +100,22 @@ Lc0b9               jsr kCHROUT
                     lda #$0d
                     jsr kCHROUT
                     rts
-                    
+
 Sc0dc               jsr kCHROUT
 Lc0df               lda $028d
                     and #$01
                     bne Lc0df
                     rts
-                    
+
 Lc0e7               jsr $bdcd
                     lda #$0d
                     jsr kCHROUT
                     jsr kCLRCHN
                     lda #$04
                     jmp kCLOSE
-                    
-                                         93 53 43 52 45 45 4e 20 4f 
-                    52 20 50 52 49 4e 54 45 52 20 3f 20 00 00 00 00 
+
+                                         93 53 43 52 45 45 4e 20 4f
+                    52 20 50 52 49 4e 54 45 52 20 3f 20 00 00 00 00
 Lc110               tax
                     lda ($fb),y
                     cmp #$20
@@ -127,5 +127,5 @@ Lc110               tax
                     tax
 Lc11d               txa
                     jmp Lc058
-                    
-                    00 00 00 00 00 
+
+                    00 00 00 00 00

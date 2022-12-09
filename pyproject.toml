@@ -1,37 +1,42 @@
-# pyproject.toml
-
 [build-system]
 requires = ["setuptools>=61.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "retrotype"
-version = "0.0.1"
+version = "0.0.2"
 description = "Debuging and conversion tool for 1980s magazine type-in programs"
 readme = "README.md"
 authors = [{ name = "Michael Buhidar", email = "mbuhidar@gmail.com" }]
+maintainers = []
 license = { file = "LICENSE" }
 classifiers = [
     "License :: OSI Approved :: MIT License",
-    "Programming Language :: Python",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: Implementation :: CPython",
 ]
 keywords = ["commodore64", "vic20", "commodore", "atari", "compute", "ahoy",
             "run", "magazine", "c64"]
 dependencies = []
-requires-python = ">=3.6"
+requires-python = ">=3.8"
 
 [project.optional-dependencies]
-dev = ["flake8", "pytest"]
+dev = ["flake8", "mypy", "black", "pre-commit",]
+test = ["pytest", "coverage",]
 
-[tool.setuptools]
-package-dir = {"" = "src"}
+# [tool.setuptools]
+# package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]  # list of folders that contain the packages (["."] by default)
+include = ["retrotype"]  # ["."] by default
+exclude = ["tests"]  # empty by default
+namespaces = true  # true by default
 
 [project.urls]
 Homepage = "https://github.com/mbuhidar/retrotype"
 
+# CLI scripts
 [project.scripts]
-retrotype_cli = "retrotype_cli:command_line_runner"
+retrotype_cli = "retrotype.retrotype_cli:command_line_runner"

@@ -2,4 +2,4 @@
 10 PRINT"HELLO!"
 
 
-20 GOTO10        
+20 GOTO10

@@ -1008,5 +1008,4 @@ on basic line:  10 PRINT"HI W"
 .C:c0f2  A9 04       LDA #$04       - A:00 X:03 Y:01 SP:f6 ..-B..ZC   93183740
 #2 (Trace  exec c0f4)  227 001
 .C:c0f4  4C C3 FF    JMP $FFC3      - A:04 X:03 Y:01 SP:f6 ..-B...C   93183742
-(C:$e5d4) 
-
+(C:$e5d4)
