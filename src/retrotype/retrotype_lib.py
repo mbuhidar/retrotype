@@ -58,8 +58,6 @@ class TextListing:
         """
 
         # handle case where first line does not have a line number
-        line_no = 0
-        # this initial value popped after three line numbers are appended
         ln_num_buffer = [0]
 
         for line in raw_listing:
@@ -76,7 +74,7 @@ class TextListing:
 
             except ValueError:
                 return (
-                    f"Entry error after line {line_no} - "
+                    f"Entry error after line {ln_num_buffer.pop(0)} - "
                     "each line should start with a line number.  Exiting."
                 )
         return None
