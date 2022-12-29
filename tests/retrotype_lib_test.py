@@ -125,19 +125,61 @@ def test_split_line_num(line, split_line):
     "lines_list, brace_error_line_num",
     [
         (['10 print"hi"', "20 goto10"], None),
-        (['10 print"hello"', "20 {goto10"], "20"),
-        (["5 {WH}CY}", '10 print"hello"'], "5"),
-        (["5 {WH{CY}", '10 print"hello"'], "5"),
+        (
+            ['10 print"hello"', "20 {goto10"],
+            "Loose brace/bracket error in line: 20\n"
+            "Special characters should be enclosed in braces/brackets.\n"
+            "Please check for unmatched single brace/bracket in above "
+            "line.",
+        ),
+        (
+            ["5 {WH}CY}", '10 print"hello"'],
+            "Loose brace/bracket error in line: 5\n"
+            "Special characters should be enclosed in braces/brackets.\n"
+            "Please check for unmatched single brace/bracket in above "
+            "line.",
+        ),
+        (
+            ["5 {WH{CY}", '10 print"hello"'],
+            "Loose brace/bracket error in line: 5\n"
+            "Special characters should be enclosed in braces/brackets.\n"
+            "Please check for unmatched single brace/bracket in above "
+            "line.",
+        ),
         (["10 [CLEAR][INSERT][BROWN][LTRED][GRAY1][GRAY2][LTGREEN]"], None),
         (["20 [PURPLE][LEFT][YELLOW][CYAN][SS]"], None),
-        (["20 [PURPLE[LEFT][YELLOW][CYAN][SS]"], "20"),
-        (["20 PURPLE][LEFT][YELLOW][CYAN][SS]"], "20"),
+        (
+            ["20 [PURPLE[LEFT][YELLOW][CYAN][SS]"],
+            "Loose brace/bracket error in line: 20\n"
+            "Special characters should be enclosed in braces/brackets.\n"
+            "Please check for unmatched single brace/bracket in above "
+            "line.",
+        ),
+        (
+            ["20 PURPLE][LEFT][YELLOW][CYAN][SS]"],
+            "Loose brace/bracket error in line: 20\n"
+            "Special characters should be enclosed in braces/brackets.\n"
+            "Please check for unmatched single brace/bracket in above "
+            "line.",
+        ),
         (['10 [2 "[PURPLE]"][LEFT][YELLOW][CYAN][SS]'], None),
         (['30 print"{4"{cd}"}{cy}";:printtab(8)"press trigger"'], None),
         (['50 print"[4" "][cy]";:printtab(8)"press trigger"'], None),
         (['40 print"[4"*"][5"4"][BR]"'], None),
-        (['30 print"4"*"][5"4"][BR]"'], "30"),
-        (['20 print"[4"*"[5"4"][BR]"'], "20"),
+        (
+            ['30 print"4"*"][5"4"][BR]"'],
+            "Loose brace/bracket error in line: 30\n"
+            "Special characters should be enclosed in braces/brackets.\n"
+            "Please check for unmatched single brace/bracket in above "
+            "line.",
+        ),
+        (
+            ['20 print"[4"*"[5"4"][BR]"'],
+            "Loose brace/bracket error in line: 20\n"
+            "Special characters should be enclosed in braces/brackets.\n"
+            "Please check for unmatched single brace/bracket in above "
+            "line.",
+        ),
         (['15 print"[4 " "][cy]";:printtab(8)"press trigger"'], None),
         (['10 print"[4 "*"][5 "4"][BR]"'], None),
     ],

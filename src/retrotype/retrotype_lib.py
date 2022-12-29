@@ -124,8 +124,15 @@ class TextListing:
             # check for loose braces in each substring, return error indication
             for sub_str in str_split:
                 loose_brace = re.search(r"\}|{", sub_str)
-                if loose_brace is not None:
-                    return str(self.split_line_num(line)[0])
+                if loose_brace:
+                    bad_line = self.split_line_num(line)[0]
+                    return (
+                        f"Loose brace/bracket error in line: {bad_line}\n"
+                        "Special characters should be enclosed in "
+                        "braces/brackets.\n"
+                        "Please check for unmatched single brace/bracket "
+                        "in above line."
+                    )
 
         return None
 
