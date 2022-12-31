@@ -165,7 +165,6 @@ class TextListing:
             num = 0
 
             for item in code_split:
-
                 if item.upper() in AHOY_TO_PETCAT:
                     new_codes.append(AHOY_TO_PETCAT[item.upper()])
 
@@ -176,10 +175,10 @@ class TextListing:
                     )
                     # Get the string inside the brackets and strip quotes
                     char_code = re.search(
-                        r"\".+?\"", item  # type: ignore
-                    ).group()[
+                        r"\".+?\"", item
+                    ).group()[  # type: ignore
                         1:-1
-                    ]  # type: ignore
+                    ]
                     if char_code.upper() in AHOY_TO_PETCAT:
                         new_codes.append(AHOY_TO_PETCAT[char_code.upper()])
 
@@ -197,9 +196,9 @@ class TextListing:
                             num += 1
                             char_count -= 1
 
-                # else:
-                # new_codes.append(item)
-                # num += 1
+                else:
+                    new_codes.append(item)
+                num += 1
 
             # add blank item to list of special characters prior to blending
             if new_codes:
@@ -335,6 +334,7 @@ class Checksums:
             next_value = next_value << 1
 
         xor_value = next_value
+
         # get high nibble of xor_value
         high_nib = (xor_value & 0xF0) >> 4
         high_char_val = high_nib + 65  # 0x41
