@@ -316,6 +316,16 @@ class Checksums:
         self.line_num = line_num
         self.byte_list = byte_list
 
+    def xor_to_checksum(self, xor_value: int) -> str:
+        # get high nibble of xor_value
+        high_nib = (xor_value & 0xF0) >> 4
+        high_char_val = high_nib + 65  # 0x41
+        # get low nibble of xor_value
+        low_nib = xor_value & 0x0F
+        low_char_val = low_nib + 65  # 0x41
+        # return value of checksum
+        return chr(high_char_val) + chr(low_char_val)
+
     def ahoy1_checksum(self) -> str:
         """
         Method to create Ahoy checksums from passed in byte list to match the
@@ -326,23 +336,16 @@ class Checksums:
         next_value = 0
 
         for char_val in self.byte_list:
-            # Detect spaces that are outside of quotes and ignore them, else
-            # execute primary checksum generation algorithm
+            # Detect spaces and ignore them
             if char_val == 32:
                 continue
-            next_value = char_val + next_value
-            next_value = next_value << 1
+            next_value += char_val
+            # left shift 1 bit and limit next_value to fit in one byte
+            next_value = (next_value << 1) & 255
 
         xor_value = next_value
 
-        # get high nibble of xor_value
-        high_nib = (xor_value & 0xF0) >> 4
-        high_char_val = high_nib + 65  # 0x41
-        # get low nibble of xor_value
-        low_nib = xor_value & 0x0F
-        low_char_val = low_nib + 65  # 0x41
-        # return value of checksum
-        return chr(high_char_val) + chr(low_char_val)
+        return self.xor_to_checksum(xor_value)
 
     def ahoy2_checksum(self) -> str:
         """
@@ -382,14 +385,7 @@ class Checksums:
 
             char_position = char_position + 1
 
-        # get high nibble of xor_value
-        high_nib = (xor_value & 0xF0) >> 4
-        high_char_val = high_nib + 65  # 0x41
-        # get low nibble of xor_value
-        low_nib = xor_value & 0x0F
-        low_char_val = low_nib + 65  # 0x41
-        # return value of checksum
-        return chr(high_char_val) + chr(low_char_val)
+        return self.xor_to_checksum(xor_value)
 
     def ahoy3_checksum(self) -> str:
         """
@@ -407,9 +403,6 @@ class Checksums:
         line_hi = int(self.line_num / 256)
 
         byte_line = [line_low] + [line_hi] + self.byte_list
-
-        # byte_list.insert(0, line_hi)
-        # byte_list.insert(0, line_low)
 
         for char_val in byte_line:
 
@@ -431,14 +424,7 @@ class Checksums:
 
             char_position = char_position + 1
 
-        # get high nibble of xor_value
-        high_nib = (xor_value & 0xF0) >> 4
-        high_char_val = high_nib + 65  # 0x41
-        # get low nibble of xor_value
-        low_nib = xor_value & 0x0F
-        low_char_val = low_nib + 65  # 0x41
-        # return value of checksum
-        return chr(high_char_val) + chr(low_char_val)
+        return self.xor_to_checksum(xor_value)
 
 
 class OutputFiles:
