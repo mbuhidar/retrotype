@@ -165,6 +165,7 @@ class TextListing:
             num = 0
 
             for item in code_split:
+                print(line, item)
                 if item.upper() in AHOY_TO_PETCAT:
                     new_codes.append(AHOY_TO_PETCAT[item.upper()])
 
