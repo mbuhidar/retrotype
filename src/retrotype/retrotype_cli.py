@@ -140,13 +140,8 @@ def command_line_runner(argv=None, width=None):
         sys.exit(1)
 
     # Check for loose brackets/braces
-    if brace_error_line_num := tl.check_for_loose_braces(raw_listing):
-        print(
-            f"Loose brace/bracket error in line: {brace_error_line_num}\n"
-            "Special characters should be enclosed in braces/brackets.\n"
-            "Please check for unmatched single brace/bracket in above "
-            "line."
-        )
+    if brace_message := tl.check_for_loose_braces(raw_listing):
+        print(brace_message)
         sys.exit(1)
 
     # Create lines list converting to common special character codes in braces
