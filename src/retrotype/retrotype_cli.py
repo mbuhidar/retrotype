@@ -18,12 +18,19 @@ from retrotype.retrotype_lib import (
     TokenizedLine,
 )
 
+SOURCE_CHOICES = ["ahoy1", "ahoy2", "ahoy3"]
+
 
 def check_source(source: str) -> str:
-    if source in {"ahoy1", "ahoy2", "ahoy3"}:
+    source_string = "'" + "', '".join(SOURCE_CHOICES) + "'"
+    if source in SOURCE_CHOICES:
         return source
     else:
-        raise argparse.ArgumentTypeError("Magazine format not yet supported.")
+        raise argparse.ArgumentTypeError(
+            f"invalid choice: '{source}'\n"
+            "Magazine format not yet supported - "
+            f"choose from {source_string}."
+        )
 
 
 def parse_args(argv):
@@ -82,8 +89,8 @@ def parse_args(argv):
     parser.add_argument(
         "-s",
         "--source",
-        choices=["ahoy1", "ahoy2", "ahoy3"],
-        type=check_source,
+        choices=SOURCE_CHOICES,
+        type=check_source,  # custom type
         nargs=1,
         required=False,
         metavar="source_format",
@@ -136,7 +143,7 @@ def command_line_runner(argv=None, width=None):
     tl = TextListing(args.file_in)
     try:
         raw_listing = tl.read_listing()
-    except IOError:
+    except FileNotFoundError:
         print("File read failed - please check source file name and path.")
         sys.exit(1)
 
@@ -155,8 +162,8 @@ def command_line_runner(argv=None, width=None):
     if args.source[0][:4] == "ahoy":
         lines_list = tl.ahoy_lines_list(raw_listing)
     else:
-        print("Magazine format not yet supported.")
-        sys.exit(1)
+        # reserved for selecting future magazine formats
+        sys.exit(1)  # pragma: no cover
 
     addr = int(args.loadaddr[0], 16)
 
@@ -185,8 +192,8 @@ def command_line_runner(argv=None, width=None):
         elif args.source[0] == "ahoy3":
             ahoy_checksums.append((line_num, cs.ahoy3_checksum()))
         else:
-            print("Magazine format not yet supported.")
-            sys.exit(1)
+            # reserved for selecting future magazine formats
+            sys.exit(1)  # pragma: no cover
 
         addr = addr + len(byte_list) + 4
 

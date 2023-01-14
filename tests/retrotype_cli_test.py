@@ -1,3 +1,4 @@
+import argparse
 from io import StringIO
 
 import pytest
@@ -93,14 +94,6 @@ def test_print_checksums(capsys, ahoy_checksums, term_width, term_capture):
             "Checksums:\n\n    "
             "10 GC       20 PP   \n\nLines: 2\n\n",
         ),
-        (
-            "ahoyx",
-            '10 PRINT"HELLO"\n20 GOTO10',
-            "usage: retrotype_cli [-h] [-l load_address] [-s source_format]"
-            "input_file\n"
-            "retrotype_cli: error: argument -s/--source: Magazine format not"
-            "yet supported.",
-        ),
     ],
 )
 def test_command_line_runner(tmp_path, capsys, source, lines_list, term):
@@ -121,6 +114,94 @@ def test_command_line_runner(tmp_path, capsys, source, lines_list, term):
 
     captured = capsys.readouterr()
     assert captured.out == term_capture
+
+
+@pytest.mark.parametrize(
+    "source, lines_list, term",
+    [
+        (
+            "ahoy1",
+            '10 PRINT"HELLO"\n20 GOTO10',
+            "File read failed - please check source file name and path.\n",
+        ),
+    ],
+)
+def test_command_line_runner_nofile(
+    tmp_path, capsys, source, lines_list, term
+):
+    """
+    End to end test to check that function command_line_runner() is properly
+    generating the correct output for a given command line input.
+    """
+    d = tmp_path / "sub"
+    d.mkdir()
+    p = d / "example.bas"
+    p.write_text(lines_list)
+
+    term_capture = term.format(d=d)
+
+    argv = ["-s", source, "nofile"]
+
+    try:
+        command_line_runner(argv, 40)
+    except SystemExit as e:
+        assert isinstance(e.__context__, FileNotFoundError)
+    else:
+        raise ValueError("Exception not raised")  # pragma: no cover
+
+    captured = capsys.readouterr()
+    assert captured.out == term_capture
+
+
+@pytest.mark.parametrize(
+    "source, lines_list, term",
+    [
+        (
+            "ahoyx",
+            '10 PRINT"HELLO"\n20 GOTO10',
+            "usage: __main__.py [-h] [-l load_address] [-s source_format] "
+            "input_file\n"
+            "__main__.py: error: argument -s/--source: invalid choice: "
+            "'ahoyx'\n"
+            "Magazine format not yet supported - "
+            "choose from 'ahoy1', 'ahoy2', 'ahoy3'.\n",
+        ),
+        (
+            "rand_source_input",
+            '10 PRINT"HELLO"\n20 GOTO10',
+            "usage: __main__.py [-h] [-l load_address] [-s source_format] "
+            "input_file\n"
+            "__main__.py: error: argument -s/--source: invalid choice: "
+            "'rand_source_input'\n"
+            "Magazine format not yet supported - "
+            "choose from 'ahoy1', 'ahoy2', 'ahoy3'.\n",
+        ),
+    ],
+)
+def test_command_line_runner_err(tmp_path, capsys, source, lines_list, term):
+    """
+    Test for handling of invalid source inputs.  Part of end to end test to
+    check that function command_line_runner() is properly generating the
+    correct output for a given command line input.
+    """
+    d = tmp_path / "sub"
+    d.mkdir()
+    p = d / "example.bas"
+    p.write_text(lines_list)
+
+    term_capture = term.format(d=d)
+
+    argv = ["-s", source, str(p)]
+
+    try:
+        command_line_runner(argv, 40)
+    except SystemExit as e:
+        assert isinstance(e.__context__, argparse.ArgumentError)
+    else:
+        raise ValueError("Exception not raised")  # pragma: no cover
+
+    captured = capsys.readouterr()
+    assert captured.err == term_capture
 
 
 @pytest.mark.parametrize(
@@ -199,8 +280,9 @@ def test_command_line_runner_interactive(
     tmp_path, capsys, monkeypatch, user_entry, source, lines_list, term
 ):
     """
-    End to end test to check that function command_line_runner() is properly
-    generating the correct output for a given command line input.
+    Test for handling of command line interaction.  Part of end to end test to
+    check that function command_line_runner() is properly generating the
+    correct output for a given command line input.
     """
     d = tmp_path / "sub"
     d.mkdir()
