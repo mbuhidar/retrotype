@@ -19,6 +19,13 @@ from retrotype.retrotype_lib import (
 )
 
 
+def check_source(source: str) -> str:
+    if source in {"ahoy1", "ahoy2", "ahoy3"}:
+        return source
+    else:
+        raise argparse.ArgumentTypeError("Magazine format not yet supported.")
+
+
 def parse_args(argv):
     """Parses command line inputs and generate command line interface and
     documentation.
@@ -76,7 +83,7 @@ def parse_args(argv):
         "-s",
         "--source",
         choices=["ahoy1", "ahoy2", "ahoy3"],
-        type=str,
+        type=check_source,
         nargs=1,
         required=False,
         metavar="source_format",

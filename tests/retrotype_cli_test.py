@@ -93,6 +93,14 @@ def test_print_checksums(capsys, ahoy_checksums, term_width, term_capture):
             "Checksums:\n\n    "
             "10 GC       20 PP   \n\nLines: 2\n\n",
         ),
+        (
+            "ahoyx",
+            '10 PRINT"HELLO"\n20 GOTO10',
+            "usage: retrotype_cli [-h] [-l load_address] [-s source_format]"
+            "input_file\n"
+            "retrotype_cli: error: argument -s/--source: Magazine format not"
+            "yet supported.",
+        ),
     ],
 )
 def test_command_line_runner(tmp_path, capsys, source, lines_list, term):
