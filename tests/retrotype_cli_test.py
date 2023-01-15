@@ -133,12 +133,8 @@ def test_command_line_runner_nofile(
     End to end test to check that function command_line_runner() is properly
     generating the correct output for a given command line input.
     """
-    d = tmp_path / "sub"
-    d.mkdir()
-    p = d / "example.bas"
-    p.write_text(lines_list)
 
-    term_capture = term.format(d=d)
+    term_capture = term
 
     argv = ["-s", source, "nofile"]
 

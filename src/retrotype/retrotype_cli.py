@@ -22,15 +22,14 @@ SOURCE_CHOICES = ["ahoy1", "ahoy2", "ahoy3"]
 
 
 def check_source(source: str) -> str:
-    source_string = "'" + "', '".join(SOURCE_CHOICES) + "'"
     if source in SOURCE_CHOICES:
         return source
-    else:
-        raise argparse.ArgumentTypeError(
-            f"invalid choice: '{source}'\n"
-            "Magazine format not yet supported - "
-            f"choose from {source_string}."
-        )
+    source_string = "'" + "', '".join(SOURCE_CHOICES) + "'"
+    raise argparse.ArgumentTypeError(
+        f"invalid choice: '{source}'\n"
+        "Magazine format not yet supported - "
+        f"choose from {source_string}."
+    )
 
 
 def parse_args(argv):
