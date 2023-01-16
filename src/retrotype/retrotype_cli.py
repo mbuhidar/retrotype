@@ -22,6 +22,9 @@ SOURCE_CHOICES = ["ahoy1", "ahoy2", "ahoy3"]
 
 
 def check_source(source: str) -> str:
+    """Custom type for source argument for custom verbiage when argument
+    error is encountered.
+    """
     if source in SOURCE_CHOICES:
         return source
     source_string = "'" + "', '".join(SOURCE_CHOICES) + "'"
@@ -89,7 +92,7 @@ def parse_args(argv):
         "-s",
         "--source",
         choices=SOURCE_CHOICES,
-        type=check_source,  # custom type
+        type=check_source,  # custom type instead of str
         nargs=1,
         required=False,
         metavar="source_format",
