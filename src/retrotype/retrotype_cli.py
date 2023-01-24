@@ -228,7 +228,7 @@ def command_line_runner(argv=None, width=None):
     # Print line checksums to terminal, formatted based on screen width
     print("Line Checksums:\n")
     if not width:
-        width = get_terminal_size()[0]
+        width = get_terminal_size()[0]  # pragma: no cover
     print_checksums(ahoy_checksums, width)
 
 

@@ -278,6 +278,81 @@ def test_command_line_runner_bad_line_sequence(
 
 
 @pytest.mark.parametrize(
+    "lines_list, term",
+    [
+        (
+            ['10 print"hello"', "20 {goto10"],
+            "Loose brace/bracket error in line: 20\n"
+            "Special characters should be enclosed in braces/brackets.\n"
+            "Please check for unmatched single brace/bracket in above "
+            "line.\n",
+        ),
+        (
+            ["5 {WH}CY}", '10 print"hello"'],
+            "Loose brace/bracket error in line: 5\n"
+            "Special characters should be enclosed in braces/brackets.\n"
+            "Please check for unmatched single brace/bracket in above "
+            "line.\n",
+        ),
+        (
+            ["5 {WH{CY}", '10 print"hello"'],
+            "Loose brace/bracket error in line: 5\n"
+            "Special characters should be enclosed in braces/brackets.\n"
+            "Please check for unmatched single brace/bracket in above "
+            "line.\n",
+        ),
+        (
+            ["20 [PURPLE[LEFT][YELLOW][CYAN][SS]"],
+            "Loose brace/bracket error in line: 20\n"
+            "Special characters should be enclosed in braces/brackets.\n"
+            "Please check for unmatched single brace/bracket in above "
+            "line.\n",
+        ),
+        (
+            ["20 PURPLE][LEFT][YELLOW][CYAN][SS]"],
+            "Loose brace/bracket error in line: 20\n"
+            "Special characters should be enclosed in braces/brackets.\n"
+            "Please check for unmatched single brace/bracket in above "
+            "line.\n",
+        ),
+        (
+            ['30 print"4"*"][5"4"][BR]"'],
+            "Loose brace/bracket error in line: 30\n"
+            "Special characters should be enclosed in braces/brackets.\n"
+            "Please check for unmatched single brace/bracket in above "
+            "line.\n",
+        ),
+        (
+            ['20 print"[4"*"[5"4"][BR]"'],
+            "Loose brace/bracket error in line: 20\n"
+            "Special characters should be enclosed in braces/brackets.\n"
+            "Please check for unmatched single brace/bracket in above "
+            "line.\n",
+        ),
+    ],
+)
+def test_command_line_runner_loose_braces(tmp_path, capsys, lines_list, term):
+    """
+    End to end test to check that function command_line_runner() is properly
+    generating the correct output for a given command line input.
+    """
+    d = tmp_path / "sub"
+    d.mkdir()
+    p = d / "example.bas"
+    p.write_text("\n".join(lines_list))
+
+    term_capture = term
+
+    argv = [str(p)]
+
+    with contextlib.suppress(SystemExit):
+        command_line_runner(argv, 40)
+
+    captured = capsys.readouterr()
+    assert captured.out == term_capture
+
+
+@pytest.mark.parametrize(
     "user_entry, source, lines_list, term",
     [
         (
