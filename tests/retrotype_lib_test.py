@@ -253,6 +253,18 @@ def test_check_for_loose_braces(lines_list, brace_error_line_num):
         ),
         (['20 print"[4 "*"][5 "4"][BR]"'], ['20 print"****44444{brn}"']),
         (["20 data1, 2, 3, 4"], ["20 data1, 2, 3, 4"]),
+        (
+            ['12 print"[2 " "][cyan][2 "[c *]"] [s ep]"'],
+            ['12 print"  {cyn}{c *}{c *} {s ep}"'],
+        ),
+        (
+            ['12 print"[2 " "][cyan][c *]"'],
+            ['12 print"  {cyn}{c *}"'],
+        ),
+        (
+            ['12 print"{2 " "}{cyan}{c *}"'],
+            ['12 print"  {cyn}{c *}"'],
+        ),
     ],
 )
 def test_ahoy_lines_list(lines_list, new_lines):
