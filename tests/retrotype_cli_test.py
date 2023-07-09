@@ -14,12 +14,23 @@ from retrotype.retrotype_cli import (
 @pytest.mark.parametrize(
     "argv, arg_valid",
     [
-        (["infile.ahoy"], ["0x0801", "ahoy2", "infile.ahoy"]),
-        (["infile.ahoy", "-s", "ahoy1"], ["0x0801", "ahoy1", "infile.ahoy"]),
-        (["infile.ahoy", "-l", "0x1001"], ["0x1001", "ahoy2", "infile.ahoy"]),
+        (["infile.ahoy"], ["0x0801", "ahoy2", False, "infile.ahoy"]),
+        (
+            ["infile.ahoy", "-s", "ahoy1"],
+            ["0x0801", "ahoy1", False, "infile.ahoy"],
+        ),
+        (
+            ["infile.ahoy", "-l", "0x1001"],
+            ["0x1001", "ahoy2", False, "infile.ahoy"],
+        ),
+        (["infile.ahoy", "-w"], ["0x0801", "ahoy2", True, "infile.ahoy"]),
+        (
+            ["infile.ahoy", "-s", "ahoy3", "-l", "0x1001", "-w"],
+            ["0x1001", "ahoy3", True, "infile.ahoy"],
+        ),
         (
             ["-s", "ahoy3", "infile.ahoy", "-l", "0x1001"],
-            ["0x1001", "ahoy3", "infile.ahoy"],
+            ["0x1001", "ahoy3", False, "infile.ahoy"],
         ),
     ],
 )
@@ -29,7 +40,7 @@ def test_parse_args(argv, arg_valid):
     arguments for a range of different command line input combinations.
     """
     args = parse_args(argv)
-    arg_list = [args.loadaddr[0], args.source[0], args.file_in]
+    arg_list = [args.loadaddr[0], args.source[0], args.wip, args.file_in]
     assert arg_list == arg_valid
 
 
@@ -156,7 +167,8 @@ def test_command_line_runner_nofile(
         (
             "ahoyx",
             '10 PRINT"HELLO"\n20 GOTO10',
-            "usage: __main__.py [-h] [-l load_address] [-s source_format] "
+            "usage: __main__.py [-h] [-l load_address] "
+            "[-s source_format] [-w] "
             "input_file\n"
             "__main__.py: error: argument -s/--source: invalid choice: "
             "'ahoyx'\n"
@@ -166,7 +178,8 @@ def test_command_line_runner_nofile(
         (
             "rand_source_input",
             '10 PRINT"HELLO"\n20 GOTO10',
-            "usage: __main__.py [-h] [-l load_address] [-s source_format] "
+            "usage: __main__.py [-h] [-l load_address] "
+            "[-s source_format] [-w] "
             "input_file\n"
             "__main__.py: error: argument -s/--source: invalid choice: "
             "'rand_source_input'\n"
