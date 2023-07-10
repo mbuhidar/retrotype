@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "retrotype"
-version = "1.0.0"
+version = "1.1.0"
 description = "Debuging and conversion tool for 1980s magazine type-in programs"
 readme = "README.md"
 authors = [{ name = "Michael Buhidar", email = "mbuhidar@gmail.com" }]

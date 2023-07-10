@@ -104,6 +104,13 @@ def parse_args(argv):
     )
 
     parser.add_argument(
+        "-w",
+        "--wip",
+        action="store_true",
+        help="Work in progress, do not output executable binary file.\n",
+    )
+
+    parser.add_argument(
         "file_in",
         type=str,
         metavar="input_file",
@@ -219,8 +226,9 @@ def command_line_runner(argv=None, width=None):
 
     ofiles = OutputFiles(bytes_out, ahoy_checksums)
 
-    # Write binary file compatible with Commodore computers or emulators
-    ofiles.write_binary(f"{file_stem}.prg")
+    # Write binary file Commodore computers or emulators if not WIP
+    if not args.wip:
+        ofiles.write_binary(f"{file_stem}.prg")
 
     # Write text file containing line numbers, checksums, and line count
     ofiles.write_checksums(f"{file_stem}.chk")
